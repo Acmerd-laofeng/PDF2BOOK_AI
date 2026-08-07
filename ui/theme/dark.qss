@@ -1,0 +1,85 @@
+/* PDF2BOOK AI - Dark Theme QSS */
+
+QWidget {
+    background: #1a1a1a;
+    color: #e0e0e0;
+}
+
+QLabel {
+    color: #e0e0e0;
+    background: transparent;
+}
+
+/* 滚动区域 */
+QScrollArea {
+    background: transparent;
+    border: none;
+}
+
+QScrollBar:vertical {
+    background: #2a2a2a;
+    width: 8px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical {
+    background: #555;
+    border-radius: 4px;
+    min-height: 30px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #666;
+}
+
+QScrollBar:horizontal {
+    background: #2a2a2a;
+    height: 8px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #555;
+    border-radius: 4px;
+    min-width: 30px;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    height: 0;
+    width: 0;
+}
+
+/* QTextEdit / QTextBrowser */
+QTextEdit, QTextBrowser {
+    background: #1e1e1e;
+    color: #ddd;
+    border: 1px solid #333;
+    border-radius: 6px;
+}
+
+/* QGroupBox */
+QGroupBox {
+    border: 1px solid #333;
+    border-radius: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    color: #ccc;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 12px;
+    padding: 0 6px;
+    color: #60cdff;
+}
+
+/* CardWidget */
+CardWidget, QFrame#card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+}
+
+/* PushButton 默认 */
+QPushButton {
+    border-radius: 6px;
+}

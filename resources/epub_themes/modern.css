@@ -1,0 +1,27 @@
+/* 现代简洁主题 */
+body {
+    font-family: sans-serif;
+    line-height: 1.8;
+    margin: 8%;
+}
+p {
+    text-indent: 2em;
+    margin: 0.6em 0;
+}
+h1 {
+    text-align: center;
+    font-size: 1.8em;
+    margin: 2em 0 0.8em;
+    color: #1a73e8;
+}
+h2 {
+    text-align: center;
+    font-size: 1.4em;
+    margin: 1.5em 0 0.6em;
+    color: #333;
+}
+h3 {
+    font-size: 1.1em;
+    margin: 1em 0 0.4em;
+    color: #555;
+}

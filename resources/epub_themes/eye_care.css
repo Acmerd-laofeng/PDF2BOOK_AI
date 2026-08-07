@@ -1,0 +1,29 @@
+/* 护眼模式主题 */
+body {
+    font-family: serif;
+    line-height: 2.0;
+    margin: 6%;
+    background: #f5f0e8;
+    color: #3a3a3a;
+}
+p {
+    text-indent: 2em;
+    margin: 0.5em 0;
+}
+h1 {
+    text-align: center;
+    font-size: 1.6em;
+    margin: 1.5em 0 0.5em;
+    color: #5a4a3a;
+}
+h2 {
+    text-align: center;
+    font-size: 1.3em;
+    margin: 1.2em 0 0.5em;
+    color: #6a5a4a;
+}
+h3 {
+    font-size: 1.1em;
+    margin: 1em 0 0.3em;
+    color: #6a5a4a;
+}

@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+*.spec.bak
+
+# PyInstaller
+*.manifest
+
+# 项目运行时产物
+cache/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# 临时文件
+*.tmp
+*.log
+
+# 安装包产物（从 Release 下载，不入仓库）
+installer_output/*.exe
+
+# 测试用大文件
+tests/sample.pdf

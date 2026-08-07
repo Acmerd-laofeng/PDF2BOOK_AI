@@ -1,0 +1,77 @@
+# -*- coding: utf-8 -*-
+/* PDF2BOOK AI - 亮色主题 QSS */
+QWidget {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+QGroupBox {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 12px;
+    padding-top: 16px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 12px;
+    padding: 0 6px;
+}
+
+QLabel {
+    color: #333;
+    background: transparent;
+}
+
+QPushButton {
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-size: 14px;
+}
+
+QPushButton:hover {
+    background-color: #1a86d9;
+}
+
+QPushButton:pressed {
+    background-color: #005a9e;
+}
+
+QPushButton:disabled {
+    background-color: #ccc;
+    color: #999;
+}
+
+QComboBox, QSpinBox, QLineEdit {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 6px 10px;
+}
+
+QTextEdit {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+QScrollBar:vertical {
+    background: #f0f0f0;
+    width: 10px;
+}
+
+QScrollBar::handle:vertical {
+    background: #ccc;
+    border-radius: 5px;
+}
+
+QScrollArea {
+    border: none;
+    background: transparent;
+}

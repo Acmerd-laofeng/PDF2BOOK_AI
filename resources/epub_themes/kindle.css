@@ -1,0 +1,24 @@
+/* Kindle 风格主题 */
+body {
+    font-family: serif;
+    line-height: 1.6;
+    margin: 3%;
+}
+p {
+    text-indent: 2em;
+    margin: 0.3em 0;
+}
+h1 {
+    text-align: center;
+    font-size: 1.5em;
+    margin: 1em 0 0.5em;
+}
+h2 {
+    text-align: center;
+    font-size: 1.2em;
+    margin: 1em 0 0.5em;
+}
+h3 {
+    font-size: 1.1em;
+    margin: 0.8em 0 0.3em;
+}
