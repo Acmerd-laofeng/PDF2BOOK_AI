@@ -176,6 +176,58 @@ class Corrector:
             "details": all_findings[:100],  # 限制前 100 条
         }
 
+    def llm_correct(self, paragraphs: list[tuple[str, str]], llm_client=None) -> list[tuple[str, str]]:
+        """使用 LLM 对低置信度段落进行 AI 纠错
+
+        策略：只对包含低置信度区域的段落调用 LLM，减少 API 调用次数。
+        先用本地字典纠错，再对剩余可疑段落调用 LLM。
+
+        Args:
+            paragraphs: [(type, text), ...]
+            llm_client: LLMClient 实例（必须已配置 api_key）
+
+        Returns:
+            纠错后的段落列表
+        """
+        if not llm_client or not llm_client.is_available:
+            return paragraphs
+
+        from core.event_bus import event_bus
+
+        # 找出需要 LLM 纠错的段落（有低置信度标记的）
+        needs_correction = []
+        needs_indices = []
+        for i, (p_type, p_text) in enumerate(paragraphs):
+            findings = self.find_low_confidence_words(p_text)
+            # 有可疑字符或段落较长（可能含隐含错误）
+            if findings or (len(p_text) > 50 and p_type == "body"):
+                needs_correction.append(p_text)
+                needs_indices.append(i)
+
+        if not needs_correction:
+            event_bus.log_message.emit("[AI纠错] 未发现需要 AI 纠错的段落")
+            return paragraphs
+
+        event_bus.log_message.emit(
+            f"[AI纠错] 对 {len(needs_correction)} 个段落调用 Gemini 纠错..."
+        )
+
+        # 逐段调用 LLM 纠错
+        corrected_count = 0
+        for idx, text in zip(needs_indices, needs_correction):
+            result = llm_client.correct_ocr(text)
+            if result and result != text:
+                # 记录学到的纠错（简单提取差异）
+                paragraphs[idx] = (paragraphs[idx][0], result)
+                corrected_count += 1
+
+        event_bus.log_message.emit(
+            f"[AI纠错] 完成: {corrected_count}/{len(needs_correction)} 段落被修正, "
+            f"API 调用 {llm_client.call_count} 次"
+        )
+
+        return paragraphs
+
     def learn(self, wrong: str, correct: str):
         """学习用户修正（存入字典）"""
         if wrong and correct and wrong != correct:

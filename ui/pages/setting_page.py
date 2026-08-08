@@ -128,30 +128,43 @@ class SettingPage(QWidget):
 
         layout.addWidget(epub_card)
 
-        # === AI 配置（预留）===
+        # === AI 配置 ===
         ai_card = CardWidget()
         ai_layout = QVBoxLayout(ai_card)
         ai_layout.setContentsMargins(20, 16, 20, 16)
         ai_layout.setSpacing(12)
 
-        ai_title = BodyLabel("AI 配置（预留 · v4 启用）")
-        ai_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #888;")
+        ai_title = BodyLabel("AI 纠错配置")
+        ai_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #0078d4;")
         ai_layout.addWidget(ai_title)
 
         ai_layout.addWidget(BodyLabel("AI 服务"))
         self.api_provider = ComboBox()
-        self.api_provider.addItems(["不启用", "DeepSeek", "OpenAI", "本地模型"])
+        self.api_provider.addItems(["不启用", "Google Gemini"])
         ai_layout.addWidget(self.api_provider)
+
+        ai_layout.addWidget(BodyLabel("Gemini 模型"))
+        self.ai_model = ComboBox()
+        from app.constants import GEMINI_MODELS
+        for key, name in GEMINI_MODELS.items():
+            self.ai_model.addItem(name)
+        ai_layout.addWidget(self.ai_model)
 
         ai_layout.addWidget(BodyLabel("API Key"))
         self.api_key = LineEdit()
-        self.api_key.setPlaceholderText("输入 API Key（留空则不启用 AI 功能）")
+        self.api_key.setPlaceholderText("输入 Gemini API Key（留空则不启用 AI 功能）")
         self.api_key.setEchoMode(LineEdit.Password)
         ai_layout.addWidget(self.api_key)
 
+        # 测试连接按钮
+        self.btn_test_ai = PushButton("测试连接")
+        self.btn_test_ai.setFixedHeight(36)
+        self.btn_test_ai.clicked.connect(self._test_ai_connection)
+        ai_layout.addWidget(self.btn_test_ai)
+
         ai_switch_row = QHBoxLayout()
         col_a = QVBoxLayout()
-        col_a.addWidget(BodyLabel("OCR 纠错"))
+        col_a.addWidget(BodyLabel("OCR AI 纠错"))
         self.ocr_correction = SwitchButton()
         col_a.addWidget(self.ocr_correction)
         ai_switch_row.addLayout(col_a)
@@ -197,8 +210,53 @@ class SettingPage(QWidget):
                 self.default_theme.setCurrentIndex(i)
                 break
 
+        # AI 配置
+        provider = Config.get_ai_provider()
+        provider_map = {"none": 0, "gemini": 1}
+        if provider in provider_map:
+            self.api_provider.setCurrentIndex(provider_map[provider])
+
+        model = Config.get_ai_model()
+        from app.constants import GEMINI_MODELS
+        model_keys = list(GEMINI_MODELS.keys())
+        for i, k in enumerate(model_keys):
+            if k == model:
+                self.ai_model.setCurrentIndex(i)
+                break
+
+        key = Config.get_ai_api_key()
+        if key:
+            self.api_key.setText(key)
+
+        self.ocr_correction.setChecked(Config.get_ai_correct_enabled())
+
+    def _test_ai_connection(self):
+        """测试 Gemini API 连接"""
+        key = self.api_key.text().strip()
+        if not key:
+            from qfluentwidgets import InfoBar, InfoBarPosition
+            InfoBar.warning("提示", "请先输入 API Key", parent=self, duration=3000)
+            return
+
+        from app.constants import GEMINI_MODELS
+        model_keys = list(GEMINI_MODELS.keys())
+        model = model_keys[self.ai_model.currentIndex()]
+
+        from engines.ai.llm_client import LLMClient
+        client = LLMClient(api_key=key, model=model)
+
+        from qfluentwidgets import InfoBar, InfoBarPosition
+        success, msg = client.test_connection()
+        if success:
+            InfoBar.success("连接成功", msg, parent=self, duration=5000)
+        else:
+            InfoBar.error("连接失败", msg, parent=self, duration=8000)
+
     def _on_save(self):
         """保存设置"""
+        from app.config import Config
+        from app.constants import GEMINI_MODELS
+
         settings = {
             "quality": self.quality.currentText(),
             "dpi": self.dpi.value(),
@@ -210,4 +268,14 @@ class SettingPage(QWidget):
             "epub_theme": self._theme_keys[self.default_theme.currentIndex()],
             "export_format": self.default_format.currentText(),
         }
+
+        # AI 配置持久化
+        provider_map = {0: "none", 1: "gemini"}
+        Config.set_ai_provider(provider_map.get(self.api_provider.currentIndex(), "none"))
+
+        model_keys = list(GEMINI_MODELS.keys())
+        Config.set_ai_model(model_keys[self.ai_model.currentIndex()])
+        Config.set_ai_api_key(self.api_key.text().strip())
+        Config.set_ai_correct_enabled(self.ocr_correction.isChecked())
+
         self.settings_changed.emit(settings)

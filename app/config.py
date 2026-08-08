@@ -72,3 +72,38 @@ class Config:
     @classmethod
     def get_gap_ratio(cls) -> float:
         return float(cls.get("gap_ratio", "1.8"))
+
+    # --- AI 配置 ---
+
+    @classmethod
+    def get_ai_provider(cls) -> str:
+        """AI 服务商：none / gemini / local"""
+        return cls.get("ai_provider", "none")
+
+    @classmethod
+    def set_ai_provider(cls, provider: str):
+        cls.set("ai_provider", provider)
+
+    @classmethod
+    def get_ai_api_key(cls) -> str:
+        return cls.get("ai_api_key", "")
+
+    @classmethod
+    def set_ai_api_key(cls, key: str):
+        cls.set("ai_api_key", key)
+
+    @classmethod
+    def get_ai_model(cls) -> str:
+        return cls.get("ai_model", "gemini-3.5-flash")
+
+    @classmethod
+    def set_ai_model(cls, model: str):
+        cls.set("ai_model", model)
+
+    @classmethod
+    def get_ai_correct_enabled(cls) -> bool:
+        return cls.get("ai_correct_enabled", "false") == "true"
+
+    @classmethod
+    def set_ai_correct_enabled(cls, enabled: bool):
+        cls.set("ai_correct_enabled", "true" if enabled else "false")

@@ -91,3 +91,14 @@ DB_PATH = "pdf2book.db"
 # 缓存目录
 CACHE_DIR = "cache"
 PAGE_CACHE_DIR = "cache/pages"
+
+# AI 纠错配置
+GEMINI_DEFAULT_MODEL = "gemini-3.5-flash"
+GEMINI_MODELS = {
+    "gemini-3.5-flash": "Gemini 3.5 Flash（推荐，快速+免费）",
+    "gemini-3.5-flash-lite": "Gemini 3.5 Flash Lite（轻量省配额）",
+    "gemini-2.0-flash": "Gemini 2.0 Flash（兼容旧版）",
+    "gemini-3.1-flash-lite": "Gemini 3.1 Flash Lite（备用）",
+}
+AI_CORRECT_MIN_TEXT_LENGTH = 5   # 短于此长度的文本不调 API
+AI_CORRECT_BATCH_SIZE = 20        # 每批最多处理段落数

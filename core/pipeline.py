@@ -197,12 +197,31 @@ class Pipeline:
                 log("开始 OCR 纠错...")
                 all_paragraphs = self.corrector.correct_paragraphs(all_paragraphs)
                 correction_count = self.corrector.total_corrections
-                log(f"纠错完成: {correction_count} 处修正")
+                log(f"本地字典纠错完成: {correction_count} 处修正")
 
                 # 生成纠错报告
                 correction_report = self.corrector.generate_correction_report(all_paragraphs)
                 if correction_report["total_findings"] > 0:
                     log(f"潜在错误: {correction_report['total_findings']} 处")
+
+            # === 阶段 3c-2: AI 纠错（Gemini）===
+            if settings.enable_ai_correct:
+                from app.config import Config
+                provider = Config.get_ai_provider()
+                api_key = Config.get_ai_api_key()
+                ai_model = Config.get_ai_model()
+
+                if provider == "gemini" and api_key:
+                    from engines.ai.llm_client import LLMClient
+                    llm = LLMClient(api_key=api_key, model=ai_model)
+                    log(f"启用 Gemini AI 纠错（模型: {ai_model}）...")
+                    all_paragraphs = self.corrector.llm_correct(all_paragraphs, llm)
+                    if llm.last_error and llm.call_count == 0:
+                        log(f"AI 纠错失败: {llm.last_error}")
+                    # 更新纠错报告
+                    correction_report = self.corrector.generate_correction_report(all_paragraphs)
+                else:
+                    log("AI 纠错已启用但未配置 API Key，跳过")
 
             total_chars = sum(len(p[1]) for p in all_paragraphs)
 
