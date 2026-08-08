@@ -149,17 +149,20 @@ class FormatConverterService:
             info["status"] = "completed"
             info["progress"] = 100
 
+            # 从 pipeline 报告中获取统计信息
+            report = getattr(self.pipeline, '_last_report', {})
+
             # 写入书库
             if self.db:
                 try:
                     self.db.insert_book(
-                        title=info.get("filename", "Unknown").rsplit(".", 1)[0],
-                        author="Unknown",
+                        title=report.get("title", info.get("filename", "Unknown").rsplit(".", 1)[0]),
+                        author=report.get("author", "Unknown"),
                         source_pdf=info.get("source_path", ""),
                         output_epub=info.get("output_path", ""),
                         total_pages=0,
-                        total_chars=0,
-                        chapter_count=0,
+                        total_chars=report.get("total_chars", 0),
+                        chapter_count=report.get("chapters", 0),
                     )
                     event_bus.book_added.emit(0)
                 except Exception as e:

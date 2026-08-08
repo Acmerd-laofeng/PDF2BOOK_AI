@@ -53,6 +53,18 @@ class TestParsedDocument:
         assert doc.compute_stats() == 10
         assert doc.total_chars == 10
 
+    def test_empty_chapters(self):
+        doc = ParsedDocument(title="空书")
+        assert doc.chapter_count == 0
+        assert doc.total_chars == 0
+        assert doc.compute_stats() == 0
+
+    def test_chapter_with_images(self):
+        doc = ParsedDocument()
+        ch = doc.add_chapter(title="图文章节", paragraphs=["文字"])
+        ch.images.append(b"\x89PNG")
+        assert len(ch.images) == 1
+
 
 # ========== 读取器测试 ==========
 

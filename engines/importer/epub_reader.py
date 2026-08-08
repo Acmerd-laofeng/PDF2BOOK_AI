@@ -37,10 +37,17 @@ class EPUBReader(BaseReader):
             chapter_title = self._extract_title_from_html(soup) or os.path.basename(item_name)
 
             paragraphs = []
-            for tag in soup.find_all(["p", "div"]):
+            for tag in soup.find_all("p"):
                 text = tag.get_text(strip=True)
                 if text:
                     paragraphs.append(text)
+
+            # 如果没有 <p> 标签，回退到 <div> 文本
+            if not paragraphs:
+                for tag in soup.find_all("div"):
+                    text = tag.get_text(strip=True)
+                    if text:
+                        paragraphs.append(text)
 
             if paragraphs:
                 chapter = Chapter(

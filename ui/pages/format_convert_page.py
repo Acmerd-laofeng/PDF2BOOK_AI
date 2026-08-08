@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 """格式转换页面 — 独立于 OCR 转换页
 
-支持 PDF/EPUB/TXT/MOBI 互转。
-拖入或选择文件 → 选择目标格式 → 开始转换 → 进度反馈。
+支持 PDF/EPUB/TXT/MOBI 互转（MOBI 仅读取）。
+拖入或选择文件 → 选择目标格式 → 开始转换 → 进度反馈 → 打开输出。
 """
 import os
+import subprocess
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QFileDialog, QScrollArea, QFrame
+    QWidget, QVBoxLayout, QHBoxLayout, QFileDialog, QScrollArea
 )
 from PySide6.QtCore import Qt, Signal
 from qfluentwidgets import (
     TitleLabel, BodyLabel, PushButton, ComboBox, FluentIcon as FIF,
-    InfoBar, InfoBarPosition, CardWidget, IconWidget, LineEdit,
+    InfoBar, InfoBarPosition, CardWidget, LineEdit,
     ProgressBar, StrongBodyLabel, CaptionLabel
 )
 
@@ -20,30 +21,29 @@ from core.format_converter import FormatConverterService
 from core.event_bus import event_bus
 from app.format_constants import (
     SUPPORTED_FORMATS, FORMAT_CONVERSION_MATRIX, FORMAT_LABELS,
-    FORMAT_DESCRIPTIONS, DEFAULT_EXPORT_OPTIONS
 )
 
 
 class FormatConvertPage(QWidget):
     """格式转换页面"""
 
-    start_conversion = Signal(dict)  # 转换参数
+    start_conversion = Signal(dict)
 
     def __init__(self):
         super().__init__()
         self.setObjectName("format_convert_page")
         self._service = FormatConverterService()
         self._current_file = None
+        self._current_task_id = None
+        self._last_output = ""
         self._init_ui()
         self._connect_events()
 
     def _init_ui(self):
-        # 主布局
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(40, 30, 40, 30)
         main_layout.setSpacing(16)
 
-        # 滚动区域
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
@@ -53,19 +53,14 @@ class FormatConvertPage(QWidget):
         content_layout = QVBoxLayout(content)
         content_layout.setSpacing(20)
 
-        # 标题
+        # === 标题 ===
         header = QHBoxLayout()
         header.addWidget(TitleLabel("格式转换"))
         header.addStretch()
-
-        self.btn_help = PushButton("使用说明")
-        self.btn_help.setIcon(FIF.QUESTION)
-        header.addWidget(self.btn_help)
         content_layout.addLayout(header)
 
-        # 说明文字
         desc = BodyLabel(
-            "支持 PDF、EPUB、TXT、MOBI 格式互转。\n"
+            "支持 PDF、EPUB、TXT、MOBI 格式互转（MOBI 仅可读取）。\n"
             "无需 OCR，直接提取文本并转换格式。"
         )
         desc.setStyleSheet("color: #888; font-size: 14px;")
@@ -77,8 +72,7 @@ class FormatConvertPage(QWidget):
         file_layout.setContentsMargins(24, 20, 24, 20)
         file_layout.setSpacing(12)
 
-        file_title = StrongBodyLabel("选择文件")
-        file_layout.addWidget(file_title)
+        file_layout.addWidget(StrongBodyLabel("选择文件"))
 
         file_row = QHBoxLayout()
         self.input_file = LineEdit()
@@ -91,12 +85,10 @@ class FormatConvertPage(QWidget):
         file_row.addWidget(self.btn_browse)
         file_layout.addLayout(file_row)
 
-        # 拖放提示
         self.lbl_drop = CaptionLabel("💡 支持拖放文件到此处")
         self.lbl_drop.setStyleSheet("color: #666;")
         file_layout.addWidget(self.lbl_drop)
 
-        # 文件信息
         self.lbl_file_info = BodyLabel("")
         self.lbl_file_info.setStyleSheet("color: #0078d4; font-size: 13px;")
         self.lbl_file_info.setVisible(False)
@@ -110,20 +102,18 @@ class FormatConvertPage(QWidget):
         settings_layout.setContentsMargins(24, 20, 24, 20)
         settings_layout.setSpacing(12)
 
-        settings_title = StrongBodyLabel("转换设置")
-        settings_layout.addWidget(settings_title)
+        settings_layout.addWidget(StrongBodyLabel("转换设置"))
 
         # 目标格式
         format_row = QHBoxLayout()
         format_row.addWidget(BodyLabel("目标格式:"))
-
         self.combo_target = ComboBox()
         self.combo_target.setMinimumWidth(200)
         format_row.addWidget(self.combo_target)
         format_row.addStretch()
         settings_layout.addLayout(format_row)
 
-        # EPUB 主题选项（仅 EPUB 目标时显示）
+        # EPUB 主题
         self.theme_row = QHBoxLayout()
         self.theme_row.addWidget(BodyLabel("EPUB 主题:"))
         self.combo_theme = ComboBox()
@@ -141,7 +131,6 @@ class FormatConvertPage(QWidget):
         self.input_output = LineEdit()
         self.input_output.setPlaceholderText("留空则与源文件同目录")
         output_row.addWidget(self.input_output)
-
         self.btn_output_browse = PushButton("浏览")
         self.btn_output_browse.setIcon(FIF.FOLDER)
         output_row.addWidget(self.btn_output_browse)
@@ -158,6 +147,11 @@ class FormatConvertPage(QWidget):
         self.btn_convert.setEnabled(False)
         btn_row.addWidget(self.btn_convert)
 
+        self.btn_cancel = PushButton("取消转换")
+        self.btn_cancel.setIcon(FIF.CANCEL)
+        self.btn_cancel.setVisible(False)
+        btn_row.addWidget(self.btn_cancel)
+
         content_layout.addLayout(btn_row)
 
         # === 进度区 ===
@@ -166,15 +160,22 @@ class FormatConvertPage(QWidget):
         progress_layout.setContentsMargins(24, 20, 24, 20)
         progress_layout.setSpacing(8)
 
-        self.lbl_progress_title = StrongBodyLabel("转换进度")
-        progress_layout.addWidget(self.lbl_progress_title)
-
+        progress_layout.addWidget(StrongBodyLabel("转换进度"))
         self.progress_bar = ProgressBar()
         progress_layout.addWidget(self.progress_bar)
 
         self.lbl_progress_status = BodyLabel("等待开始...")
         self.lbl_progress_status.setStyleSheet("color: #888; font-size: 13px;")
         progress_layout.addWidget(self.lbl_progress_status)
+
+        # 完成后操作按钮
+        done_row = QHBoxLayout()
+        done_row.addStretch()
+        self.btn_open_dir = PushButton("打开输出目录")
+        self.btn_open_dir.setIcon(FIF.FOLDER)
+        self.btn_open_dir.setVisible(False)
+        done_row.addWidget(self.btn_open_dir)
+        progress_layout.addLayout(done_row)
 
         self.progress_card.setVisible(False)
         content_layout.addWidget(self.progress_card)
@@ -183,49 +184,48 @@ class FormatConvertPage(QWidget):
         scroll.setWidget(content)
         main_layout.addWidget(scroll)
 
-        # 设置拖放
         self.setAcceptDrops(True)
 
     def _connect_events(self):
         self.btn_browse.clicked.connect(self._on_browse)
         self.btn_output_browse.clicked.connect(self._on_output_browse)
         self.btn_convert.clicked.connect(self._on_convert)
+        self.btn_cancel.clicked.connect(self._on_cancel)
+        self.btn_open_dir.clicked.connect(self._on_open_dir)
         self.combo_target.currentIndexChanged.connect(self._on_target_changed)
 
-        # EventBus
         event_bus.progress.connect(self._on_progress)
         event_bus.finished.connect(self._on_finished)
         event_bus.error.connect(self._on_error)
 
     def _on_browse(self):
-        """选择源文件"""
         path, _ = QFileDialog.getOpenFileName(
-            self,
-            "选择文件",
-            "",
+            self, "选择文件", "",
             "支持的格式 (*.pdf *.epub *.txt *.mobi);;所有文件 (*.*)"
         )
         if path:
             self._set_file(path)
 
     def _on_output_browse(self):
-        """选择输出路径"""
-        target = self.combo_target.currentData() or self.combo_target.currentText().lower()
+        target = self.combo_target.currentData() or "txt"
+        # 预填建议文件名
+        if self._current_file:
+            basename = os.path.splitext(os.path.basename(self._current_file))[0]
+            default_name = f"{basename}.{target}"
+        else:
+            default_name = f"output.{target}"
+
         path, _ = QFileDialog.getSaveFileName(
-            self,
-            "选择输出路径",
-            "",
+            self, "选择输出路径", default_name,
             f"{target.upper()} 文件 (*.{target})"
         )
         if path:
             self.input_output.setText(path)
 
     def _set_file(self, file_path: str):
-        """设置源文件"""
         self._current_file = file_path
         self.input_file.setText(file_path)
 
-        # 检测格式
         ext = os.path.splitext(file_path)[1].lower().lstrip(".")
         if ext not in SUPPORTED_FORMATS:
             InfoBar.warning(
@@ -244,6 +244,11 @@ class FormatConvertPage(QWidget):
         for t in targets:
             self.combo_target.addItem(FORMAT_LABELS.get(t, t), userData=t)
 
+        # 预填输出路径
+        basename = os.path.splitext(file_path)[0]
+        if targets:
+            self.input_output.setText(f"{basename}.{targets[0]}")
+
         # 文件信息
         size = os.path.getsize(file_path)
         if size < 1024:
@@ -261,15 +266,23 @@ class FormatConvertPage(QWidget):
         self.lbl_file_info.setVisible(True)
 
         self.btn_convert.setEnabled(bool(targets))
+        self.btn_open_dir.setVisible(False)
 
     def _on_target_changed(self):
-        """目标格式变化"""
         target = self.combo_target.currentData() or ""
-        # EPUB 目标时显示主题选项
         self.theme_widget.setVisible(target == "epub")
 
+        # 更新输出路径扩展名
+        if self._current_file and target:
+            current_output = self.input_output.text().strip()
+            if current_output:
+                base = os.path.splitext(current_output)[0]
+                self.input_output.setText(f"{base}.{target}")
+            else:
+                basename = os.path.splitext(self._current_file)[0]
+                self.input_output.setText(f"{basename}.{target}")
+
     def _on_convert(self):
-        """开始转换"""
         if not self._current_file:
             InfoBar.warning("提示", "请先选择文件", parent=self)
             return
@@ -282,46 +295,54 @@ class FormatConvertPage(QWidget):
         output_path = self.input_output.text().strip()
         options = {}
 
-        # EPUB 主题
         if target == "epub":
             theme_keys = ["classic", "kindle", "modern", "eye_care"]
             idx = self.combo_theme.currentIndex()
             if 0 <= idx < len(theme_keys):
                 options["theme"] = theme_keys[idx]
 
-        # 创建任务
         task_id = self._service.create_task(
             source_path=self._current_file,
             target_format=target,
             output_path=output_path,
             options=options,
         )
+        self._current_task_id = task_id
 
-        # 显示进度区
+        # UI 切换到转换中状态
         self.progress_card.setVisible(True)
         self.progress_bar.setValue(0)
         self.lbl_progress_status.setText("正在转换...")
-        self.btn_convert.setEnabled(False)
+        self.btn_convert.setVisible(False)
+        self.btn_cancel.setVisible(True)
+        self.btn_open_dir.setVisible(False)
 
-        # 启动转换
         self._service.start_task(task_id)
-
-        # 添加到任务页
-        filename = os.path.basename(self._current_file)
         event_bus.task_added.emit(task_id)
 
+    def _on_cancel(self):
+        if self._current_task_id:
+            self._service.cancel_task(self._current_task_id)
+            self.lbl_progress_status.setText("已取消")
+            self._reset_buttons()
+
     def _on_progress(self, filename: str, percent: int):
-        """进度更新"""
         if self._current_file and os.path.basename(self._current_file) == filename:
             self.progress_bar.setValue(percent)
             self.lbl_progress_status.setText(f"转换中... {percent}%")
 
     def _on_finished(self, filename: str):
-        """转换完成"""
         if self._current_file and os.path.basename(self._current_file) == filename:
             self.progress_bar.setValue(100)
-            self.lbl_progress_status.setText("转换完成！")
-            self.btn_convert.setEnabled(True)
+            self.lbl_progress_status.setText("✅ 转换完成！")
+
+            # 获取输出路径
+            if self._current_task_id:
+                info = self._service.get_task_info(self._current_task_id)
+                self._last_output = info.get("output_path", "")
+
+            self._reset_buttons()
+            self.btn_open_dir.setVisible(bool(self._last_output))
 
             InfoBar.success(
                 "转换完成",
@@ -332,10 +353,9 @@ class FormatConvertPage(QWidget):
             )
 
     def _on_error(self, filename: str, error_msg: str):
-        """转换错误"""
         if self._current_file and os.path.basename(self._current_file) == filename:
-            self.lbl_progress_status.setText(f"错误: {error_msg}")
-            self.btn_convert.setEnabled(True)
+            self.lbl_progress_status.setText(f"❌ 错误: {error_msg}")
+            self._reset_buttons()
 
             InfoBar.error(
                 "转换失败",
@@ -345,8 +365,23 @@ class FormatConvertPage(QWidget):
                 duration=8000,
             )
 
-    # === 拖放支持 ===
+    def _reset_buttons(self):
+        """恢复操作按钮状态"""
+        self.btn_convert.setVisible(True)
+        self.btn_convert.setEnabled(True)
+        self.btn_cancel.setVisible(False)
 
+    def _on_open_dir(self):
+        """打开输出文件所在目录"""
+        path = self._last_output
+        if path and os.path.exists(path):
+            folder = os.path.dirname(path)
+            if os.name == "nt":
+                subprocess.Popen(["explorer", "/select,", path])
+            else:
+                subprocess.Popen(["xdg-open", folder])
+
+    # === 拖放 ===
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.acceptProposedAction()

@@ -38,3 +38,5 @@ installer_output/*.exe
 
 # 测试用大文件
 tests/sample.pdf
+
+build_log.txt

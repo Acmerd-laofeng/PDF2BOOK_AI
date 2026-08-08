@@ -114,6 +114,8 @@ class FormatPipeline:
             f"({doc.chapter_count} 章, {doc.total_chars} 字)"
         )
 
+        self._last_report = report
+
         return report
 
     def cancel(self):
