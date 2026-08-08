@@ -10,7 +10,8 @@ from qfluentwidgets import (
     FluentIcon as FIF,
 )
 
-from app.constants import EPUB_THEMES
+from app.constants import EPUB_THEMES, GEMINI_MODELS
+from app.config import Config
 
 
 class SettingPage(QWidget):
@@ -56,7 +57,7 @@ class SettingPage(QWidget):
         # 转换质量
         convert_layout.addWidget(BodyLabel("转换质量"))
         self.quality = ComboBox()
-        self.quality.addItems(["快速", "推荐", "极致"])
+        self.quality.addItems(["快速", "推荐", "极致", "AI增强"])
         self.quality.setCurrentIndex(1)
         convert_layout.addWidget(self.quality)
 
@@ -177,7 +178,6 @@ class SettingPage(QWidget):
         col_model.setSpacing(4)
         col_model.addWidget(BodyLabel("Gemini 模型"))
         self.ai_model = ComboBox()
-        from app.constants import GEMINI_MODELS
         for key, name in GEMINI_MODELS.items():
             self.ai_model.addItem(name)
         col_model.addWidget(self.ai_model)
@@ -250,9 +250,8 @@ class SettingPage(QWidget):
 
     def _load_settings(self):
         """从配置加载到 UI"""
-        from app.config import Config
         quality = Config.get_quality_mode()
-        quality_map = {"fast": 0, "recommended": 1, "extreme": 2}
+        quality_map = {"quick": 0, "standard": 1, "precise": 2, "ai": 3}
         if quality in quality_map:
             self.quality.setCurrentIndex(quality_map[quality])
 
@@ -273,7 +272,6 @@ class SettingPage(QWidget):
             self.api_provider.setCurrentIndex(provider_map[provider])
 
         model = Config.get_ai_model()
-        from app.constants import GEMINI_MODELS
         model_keys = list(GEMINI_MODELS.keys())
         for i, k in enumerate(model_keys):
             if k == model:
@@ -313,8 +311,11 @@ class SettingPage(QWidget):
         from app.config import Config
         from app.constants import GEMINI_MODELS
 
+        # quality 用英文 key（与 pipeline quality_dpi_map 对齐）
+        quality_keys = ["quick", "standard", "precise", "ai"]
+        quality_key = quality_keys[self.quality.currentIndex()] if self.quality.currentIndex() < len(quality_keys) else "standard"
         settings = {
-            "quality": self.quality.currentText(),
+            "quality": quality_key,
             "dpi": self.dpi.value(),
             "parallel": self.parallel.value(),
             "indent_threshold": self.indent_threshold.value(),

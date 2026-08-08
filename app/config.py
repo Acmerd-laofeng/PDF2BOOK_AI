@@ -59,7 +59,7 @@ class Config:
 
     @classmethod
     def get_quality_mode(cls) -> str:
-        return cls.get("quality_mode", "recommended")  # fast / recommended / extreme
+        return cls.get("quality_mode", "standard")  # quick / standard / precise / ai
 
     @classmethod
     def get_theme(cls) -> str:

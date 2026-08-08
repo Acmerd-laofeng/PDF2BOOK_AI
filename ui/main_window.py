@@ -82,6 +82,7 @@ class MainWindow(FluentWindow):
         event_bus.task_status_changed.connect(self._on_task_status)
         event_bus.analysis_done.connect(self._on_analysis_done)
         event_bus.task_added.connect(self._on_task_added)
+        event_bus.report_ready.connect(self._on_report_ready)
 
         # 首页信号
         self.home_page.file_selected.connect(self._on_file_selected)
@@ -112,6 +113,14 @@ class MainWindow(FluentWindow):
             position=InfoBarPosition.TOP,
             duration=5000,
         )
+
+        # 弹出报告弹窗（report_ready 信号已更新 _task_reports）
+        for task_id, report in self._task_reports.items():
+            if report.get("filename") == filename and len(report) > 1:
+                dialog = ReportDialog(report, self)
+                dialog.exec()
+                break
+
         # 刷新书库
         self._refresh_library()
 
@@ -129,12 +138,6 @@ class MainWindow(FluentWindow):
         """任务状态变化"""
         self.task_page.update_task(task_id, status, 0)
 
-        # 完成时弹报告
-        if status == "completed" and task_id in self._task_reports:
-            report = self._task_reports[task_id]
-            dialog = ReportDialog(report, self)
-            dialog.exec()
-
     def _on_analysis_done(self, info: dict):
         """PDF 分析完成"""
         self.home_page.show_analysis(info)
@@ -142,6 +145,15 @@ class MainWindow(FluentWindow):
     def _on_task_added(self, task_id: int):
         """新任务添加"""
         pass
+
+    def _on_report_ready(self, report: dict):
+        """转换报告就绪 → 缓存报告数据"""
+        # 通过 filename 匹配 task_id
+        filename = report.get("filename", "")
+        for task_id, data in self._task_reports.items():
+            if data.get("filename") == filename:
+                self._task_reports[task_id] = report
+                break
 
     # --- UI 事件处理 ---
 
@@ -232,13 +244,7 @@ class MainWindow(FluentWindow):
         self.task_page.update_task(task_id, "cancelled", 0)
 
     def _on_settings_changed(self, settings: dict):
-        """设置页保存设置"""
-        from app.config import Config
-        Config.set("quality_mode", settings.get("quality", "推荐"))
-        Config.set("ocr_dpi", str(settings.get("dpi", 300)))
-        Config.set("indent_threshold", str(settings.get("indent_threshold", 30)))
-        Config.set("gap_ratio", str(settings.get("gap_ratio", "1.8")))
-        Config.set("epub_theme", settings.get("epub_theme", "classic"))
+        """设置页保存设置（setting_page 已自行持久化，此处仅做 UI 反馈）"""
         InfoBar.success("设置已保存", "", parent=self, duration=2000)
 
     def _refresh_library(self):
