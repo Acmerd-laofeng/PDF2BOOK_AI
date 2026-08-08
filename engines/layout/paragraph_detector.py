@@ -205,10 +205,13 @@ class ParagraphDetector:
                 if gap > avg_gap * self.gap_multiplier:
                     is_new_para = True
 
-            # 签名/落款：右半部分短行
-            if line.x_left > page_w * 0.5 and len(line.text) < 30:
-                is_new_para = True
-                para_type = 'body'
+            # 签名/落款：右半部分短行且与上一行有大间距
+            if (line.x_left > page_w * 0.5 and len(line.text) < 30
+                    and idx > 0 and avg_gap > 0):
+                gap_before = line.y_top - lines[idx - 1].y_bot
+                if gap_before > avg_gap * self.gap_multiplier:
+                    is_new_para = True
+                    para_type = 'body'
 
             if is_new_para and current_para:
                 para_text = ''.join(b.text for b in current_para)
@@ -250,13 +253,17 @@ class ParagraphDetector:
                 i += 1
                 continue
 
-            # 跨页断行合并
+            # 跨页断行合并（更严格条件）
             while i + 1 < len(paragraphs):
                 next_type, next_text = paragraphs[i + 1]
                 if (next_type != 'heading'
                         and not sentence_end.search(p_text)
                         and len(p_text) > 10
-                        and len(next_text) > 2):
+                        and len(next_text) > 5
+                        # 新增：下一段不以标题正则开头
+                        and not re.match(r'^第[一二三四五六七八九十百千零〇\d]+[章回节卷篇部]', next_text)
+                        # 新增：不是完全大写的英文新句开头
+                        and not (next_text[0].isupper() and len(next_text) > 20)):
                     p_text = p_text + next_text
                     i += 1
                 else:
