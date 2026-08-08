@@ -1,11 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PDF2BOOK AI - PyInstaller 打包配置"""
+"""PDF2BOOK AI - PyInstaller 打包配置（精简版）
+去掉 collect_all('PySide6')，依赖 PyInstaller 内置 hook 自动处理。
+"""
 import sys
 from PyInstaller.utils.hooks import collect_all
 
 block_cipher = None
 
-# 收集所有动态依赖
 datas = []
 binaries = []
 hiddenimports = []
@@ -25,9 +26,14 @@ datas += r1; binaries += r2; hiddenimports += r3
 # lxml
 hiddenimports += ['lxml._elementpath', 'lxml.etree']
 
-# PySide6 插件
-r1, r2, r3 = collect_all('PySide6')
-datas += r1; binaries += r2; hiddenimports += r3
+# PySide6 — 不用 collect_all（会收集 220MB+ 无用文件导致 OOM）
+# PyInstaller 内置 hook-PySide6.* 会自动收集必要的 DLL 和插件
+# 只需声明 hiddenimports 确保模块被导入
+hiddenimports += [
+    'PySide6.QtCore', 'PySide6.QtGui', 'PySide6.QtWidgets',
+    'PySide6.QtNetwork', 'PySide6.QtSvg', 'PySide6.QtSvgWidgets',
+    'shiboken6',
+]
 
 # QFluentWidgets
 r1, r2, r3 = collect_all('qfluentwidgets')
@@ -48,7 +54,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['tkinter', 'matplotlib', 'scipy'],
+    excludes=['tkinter', 'matplotlib', 'scipy', 'torch', 'torchvision', 'torchaudio', 'PIL.ImageTk'],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -71,11 +77,11 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,          # GUI 模式，无控制台
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='resources/icon.ico',  # 图标（需自行添加）
+    icon='resources/icon.ico',
 )
