@@ -60,7 +60,7 @@ class TestCheckUpdate:
         mock_response = {
             "tag_name": f"v{APP_VERSION}",
             "body": "Release notes here",
-            "html_url": "https://github.com/ACMERD/PDF2BOOK_AI/releases/v4.0.0",
+            "html_url": "https://github.com/Acmerd-laofeng/PDF2BOOK_AI/releases/v4.0.0",
             "assets": [
                 {"name": "PDF2BOOK_AI_Setup_v4.0.exe",
                  "browser_download_url": "https://example.com/setup.exe"}
@@ -83,7 +83,7 @@ class TestCheckUpdate:
         mock_response = {
             "tag_name": "v9.9.9",
             "body": "## 新功能\n- 大版本更新",
-            "html_url": "https://github.com/ACMERD/PDF2BOOK_AI/releases/v9.9.9",
+            "html_url": "https://github.com/Acmerd-laofeng/PDF2BOOK_AI/releases/v9.9.9",
             "assets": [
                 {"name": "PDF2BOOK_AI_Setup_v9.9.9.exe",
                  "browser_download_url": "https://example.com/setup.exe"}
@@ -109,7 +109,7 @@ class TestCheckUpdate:
         mock_response = {
             "tag_name": "v9.9.9",
             "body": "",
-            "html_url": "https://github.com/ACMERD/PDF2BOOK_AI/releases/v9.9.9",
+            "html_url": "https://github.com/Acmerd-laofeng/PDF2BOOK_AI/releases/v9.9.9",
             "assets": [],
             "published_at": "2026-08-08T00:00:00Z",
         }
@@ -123,7 +123,7 @@ class TestCheckUpdate:
             result = check_update(timeout=5)
             assert result is not None
             assert result.has_update is True
-            assert result.download_url == "https://github.com/ACMERD/PDF2BOOK_AI/releases/v9.9.9"
+            assert result.download_url == "https://github.com/Acmerd-laofeng/PDF2BOOK_AI/releases/v9.9.9"
 
     def test_network_failure_returns_none(self):
         """网络失败返回 None"""
@@ -154,6 +154,6 @@ class TestConstants:
     def test_update_url_correct(self):
         """更新 URL 指向正确的仓库"""
         assert "github.com" in UPDATE_CHECK_URL
-        assert "ACMERD" in UPDATE_CHECK_URL
+        assert "Acmerd-laofeng" in UPDATE_CHECK_URL
         assert "PDF2BOOK_AI" in UPDATE_CHECK_URL
         assert "releases/latest" in UPDATE_CHECK_URL

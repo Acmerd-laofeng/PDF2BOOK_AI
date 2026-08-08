@@ -29,11 +29,14 @@ class EPUBReader(BaseReader):
 
         # 遍历文档项
         for item in book.get_items_of_type(ITEM_DOCUMENT):
+            item_name = item.get_name() or ""
+            # 跳过封面页和导航页
+            if "cover" in item_name.lower() or "nav" in item_name.lower():
+                continue
+
             content = item.get_content()
             soup = BeautifulSoup(content, "html.parser")
 
-            # 从文件名猜测章节标题
-            item_name = item.get_name() or ""
             chapter_title = self._extract_title_from_html(soup) or os.path.basename(item_name)
 
             paragraphs = []

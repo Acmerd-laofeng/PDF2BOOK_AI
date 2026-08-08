@@ -2,11 +2,11 @@
 """应用常量定义"""
 
 APP_NAME = "PDF2BOOK AI"
-APP_VERSION = "4.0.5"
+APP_VERSION = "4.0.6"
 APP_DESCRIPTION = "AI智能电子书重构平台"
 
 # 自动更新配置
-UPDATE_CHECK_URL = "https://api.github.com/repos/ACMERD/PDF2BOOK_AI/releases/latest"
+UPDATE_CHECK_URL = "https://api.github.com/repos/Acmerd-laofeng/PDF2BOOK_AI/releases/latest"
 UPDATE_ENABLED = True
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 760

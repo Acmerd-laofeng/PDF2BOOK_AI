@@ -110,22 +110,31 @@ class MainWindow(FluentWindow):
 
     def _on_finished(self, filename: str):
         """转换完成"""
-        InfoBar.success(
-            "转换完成",
-            f"{filename} 已成功转换",
-            parent=self,
-            position=InfoBarPosition.TOP,
-            duration=5000,
-        )
-
-        # 弹出报告弹窗（report_ready 信号已更新 _task_reports）
-        for task_id, report in self._task_reports.items():
-            if report.get("filename") == filename and len(report) > 1:
-                dialog = ReportDialog(report, self)
-                dialog.exec()
+        # 检查是否为格式转换任务（不弹 OCR 报告弹窗）
+        is_format = False
+        for report in self._task_reports.values():
+            if report.get("filename") == filename and report.get("is_format_convert"):
+                is_format = True
                 break
 
-        # 刷新书库
+        if not is_format:
+            # OCR 转换：弹报告弹窗
+            InfoBar.success(
+                "转换完成",
+                f"{filename} 已成功转换",
+                parent=self,
+                position=InfoBarPosition.TOP,
+                duration=5000,
+            )
+
+            # 弹出报告弹窗（report_ready 信号已更新 _task_reports）
+            for task_id, report in self._task_reports.items():
+                if report.get("filename") == filename and len(report) > 1:
+                    dialog = ReportDialog(report, self)
+                    dialog.exec()
+                    break
+
+        # 刷新书库（两种转换都要刷新）
         self._refresh_library()
 
     def _on_error(self, filename: str, error_msg: str):

@@ -11,18 +11,26 @@
 """
 import sqlite3
 import json
+import os
 from pathlib import Path
 from typing import Optional, List
 from datetime import datetime
 
 from app.constants import DB_PATH
 
+# 解析为绝对路径：优先用 constants 中的 DB_PATH，如果是相对路径则基于项目根目录
+_APP_DIR = Path(__file__).parent.parent.parent
+if os.path.isabs(DB_PATH):
+    _DEFAULT_DB = DB_PATH
+else:
+    _DEFAULT_DB = str(_APP_DIR / DB_PATH)
+
 
 class Database:
     """SQLite 数据库管理"""
 
     def __init__(self, db_path: str = None):
-        self.db_path = db_path or DB_PATH
+        self.db_path = db_path or _DEFAULT_DB
         Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         self._conn: Optional[sqlite3.Connection] = None
         self.connect()

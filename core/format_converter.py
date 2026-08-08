@@ -31,6 +31,9 @@ class FormatConverterService:
     _next_task_id = 10000
 
     def __init__(self, db=None):
+        if db is None:
+            from database.db import Database
+            db = Database()
         self.db = db
         self.pipeline = FormatPipeline()
         self._workers: dict[int, FormatWorker] = {}
@@ -119,7 +122,6 @@ class FormatConverterService:
         worker = self._workers.get(task_id)
         if worker and worker.isRunning():
             worker.cancel()
-            worker.quit()
             worker.wait(3000)
 
         event_bus.task_status_changed.emit(task_id, "cancelled")
@@ -155,8 +157,10 @@ class FormatConverterService:
             # 写入书库
             if self.db:
                 try:
+                    src_filename = info.get("filename", "Unknown")
+                    src_basename = os.path.splitext(src_filename)[0]
                     self.db.insert_book(
-                        title=report.get("title", info.get("filename", "Unknown").rsplit(".", 1)[0]),
+                        title=report.get("title", src_basename),
                         author=report.get("author", "Unknown"),
                         source_pdf=info.get("source_path", ""),
                         output_epub=info.get("output_path", ""),
@@ -190,7 +194,6 @@ class FormatConverterService:
         for task_id, worker in list(self._workers.items()):
             if worker.isRunning():
                 worker.cancel()
-                worker.quit()
                 worker.wait(2000)
             worker.deleteLater()
         self._workers.clear()

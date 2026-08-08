@@ -327,20 +327,26 @@ class FormatConvertPage(QWidget):
             self._reset_buttons()
 
     def _on_progress(self, filename: str, percent: int):
-        if self._current_file and os.path.basename(self._current_file) == filename:
-            self.progress_bar.setValue(percent)
-            self.lbl_progress_status.setText(f"转换中... {percent}%")
+        # 只响应当前格式转换任务的进度
+        if self._current_task_id and self._current_file:
+            expected = os.path.basename(self._current_file)
+            if filename == expected and self._service.get_task_info(self._current_task_id).get("status") == "converting":
+                self.progress_bar.setValue(percent)
+                self.lbl_progress_status.setText(f"转换中... {percent}%")
 
     def _on_finished(self, filename: str):
-        if self._current_file and os.path.basename(self._current_file) == filename:
+        # 只响应当前格式转换任务
+        if self._current_task_id and self._current_file:
+            expected = os.path.basename(self._current_file)
+            if filename != expected:
+                return
+            info = self._service.get_task_info(self._current_task_id)
+            if info.get("status") != "completed":
+                return
             self.progress_bar.setValue(100)
             self.lbl_progress_status.setText("✅ 转换完成！")
 
-            # 获取输出路径
-            if self._current_task_id:
-                info = self._service.get_task_info(self._current_task_id)
-                self._last_output = info.get("output_path", "")
-
+            self._last_output = info.get("output_path", "")
             self._reset_buttons()
             self.btn_open_dir.setVisible(bool(self._last_output))
 
@@ -353,7 +359,11 @@ class FormatConvertPage(QWidget):
             )
 
     def _on_error(self, filename: str, error_msg: str):
-        if self._current_file and os.path.basename(self._current_file) == filename:
+        # 只响应当前格式转换任务
+        if self._current_task_id and self._current_file:
+            expected = os.path.basename(self._current_file)
+            if filename != expected:
+                return
             self.lbl_progress_status.setText(f"❌ 错误: {error_msg}")
             self._reset_buttons()
 
@@ -385,7 +395,7 @@ class FormatConvertPage(QWidget):
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
-            self.setStyleSheet("background: #1a3a1a;")
+            self.setStyleSheet("FormatConvertPage { background: #1a3a1a; }")
 
     def dragLeaveEvent(self, event):
         self.setStyleSheet("")

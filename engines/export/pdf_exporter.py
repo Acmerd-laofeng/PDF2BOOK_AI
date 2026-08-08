@@ -45,8 +45,8 @@ class PDFExporter(BaseExporter):
 
         styles = getSampleStyleSheet()
 
-        # 自定义样式
-        font_name = "STSong" if self._has_chinese_font else "Helvetica"
+        # 自定义样式：用实际注册的字体名，而非硬编码
+        font_name = getattr(self, "_font_name", None) or ("STSong" if self._has_chinese_font else "Helvetica")
         title_style = ParagraphStyle(
             "ChineseTitle",
             parent=styles["Title"],
