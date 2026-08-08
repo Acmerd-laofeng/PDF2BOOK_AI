@@ -3,7 +3,7 @@
 ; 使用 ISCC 编译生成 PDF2BOOK_AI_Setup_v4.0.exe
 
 #define MyAppName "PDF2BOOK AI"
-#define MyAppVersion "4.0.0"
+#define MyAppVersion "4.0.7"
 #define MyAppPublisher "ACMERD"
 #define MyAppURL "https://acmerd.com"
 #define MyAppExeName "PDF2BOOK_AI.exe"
@@ -27,11 +27,11 @@ AppContact=acmerd.com
 AppComments={#MyAppDescription}
 
 ; 版本信息
-VersionInfoVersion=4.0.0.0
+VersionInfoVersion=4.0.7.0
 VersionInfoCompany=ACMERD
 VersionInfoDescription={#MyAppDescription}
 VersionInfoProductName={#MyAppName}
-VersionInfoProductVersion=4.0.0.0
+VersionInfoProductVersion=4.0.7.0
 
 ; 安装设置
 DefaultDirName={autopf}\{#MyAppName}
@@ -90,8 +90,8 @@ Name: "associatepdf"; Description: "关联 .pdf 文件（右键打开）"; Group
 [Files]
 ; 主程序
 Source: "{#BuildOutputDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: nocompression
-; README
-Source: "README.md"; DestDir: "{app}"; Flags: isreadme ignoreversion
+; README（不默认勾选查看）
+Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 ; 开始菜单
@@ -110,7 +110,6 @@ Root: HKCU; Subkey: "Software\Classes\.pdf\shell\{#MyAppName}\command"; ValueTyp
 [Run]
 ; 安装后运行
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:RunAfter}"; Flags: nowait postinstall skipifsilent runascurrentuser
-Filename: "notepad.exe"; Parameters: "{app}\README.md"; Description: "{cm:ViewReadme}"; Flags: nowait postinstall unchecked runascurrentuser
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\cache"

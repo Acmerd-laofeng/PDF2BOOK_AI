@@ -276,7 +276,7 @@ class Pipeline:
             epub_stats = self.epub_builder.build(
                 paragraphs=all_paragraphs,
                 title=book_title,
-                author="Unknown",
+                author=info.get("author", "Unknown") if info else "Unknown",
                 output_path=epub_path,
                 theme=settings.epub_theme,
                 theme_dir=str(epub_themes_dir) if epub_themes_dir.exists() else None,
@@ -306,6 +306,7 @@ class Pipeline:
             # 返回转换报告
             return {
                 "filename": task.filename,
+                "author": info.get("author", "Unknown") if info else "Unknown",
                 "total_pages": task.total_pages,
                 "total_paragraphs": epub_stats["total_paragraphs"],
                 "total_chars": total_chars,

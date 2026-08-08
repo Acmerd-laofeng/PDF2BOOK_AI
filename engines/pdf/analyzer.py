@@ -56,6 +56,10 @@ class PDFAnalyzer:
         toc = doc.get_toc()
         has_toc = len(toc) > 0
         file_size = os.path.getsize(pdf_path)
+
+        # 元数据
+        meta = doc.metadata or {}
+        author = meta.get("author", "") or ""
         doc.close()
 
         # 判断类型
@@ -93,4 +97,5 @@ class PDFAnalyzer:
             "has_toc": has_toc,
             "toc": toc,
             "estimated_time": est_time,
+            "author": author,
         }

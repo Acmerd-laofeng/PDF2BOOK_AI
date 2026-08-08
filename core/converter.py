@@ -23,6 +23,9 @@ class ConverterService:
     """转换服务"""
 
     def __init__(self, db=None):
+        if db is None:
+            from database.db import Database
+            db = Database()
         self.task_manager = TaskManager(db=db)
         self.pipeline = Pipeline()
         self.db = db
@@ -76,7 +79,6 @@ class ConverterService:
         worker = self._workers.get(task_id)
         if worker and worker.isRunning():
             worker.cancel()
-            worker.quit()
             worker.wait(3000)  # 等待最多 3 秒
         event_bus.log_message.emit(f"任务 #{task_id} 已取消")
 
@@ -93,7 +95,6 @@ class ConverterService:
             worker = self._workers[task_id]
             if worker.isRunning():
                 worker.cancel()
-                worker.quit()
                 worker.wait(2000)
             self._workers.pop(task_id, None)
 
@@ -159,8 +160,8 @@ class ConverterService:
         try:
             book_id = self.db.insert_book(
                 title=report.get("filename", "Unknown").rsplit(".", 1)[0],
-                author="Unknown",
-                source_pdf="",
+                author=report.get("author", "Unknown"),
+                source_pdf=report.get("source_pdf", ""),
                 output_epub=report.get("output_path", ""),
                 total_pages=report.get("total_pages", 0),
                 total_chars=report.get("total_chars", 0),
@@ -213,7 +214,6 @@ class ConverterService:
         for task_id, worker in list(self._workers.items()):
             if worker.isRunning():
                 worker.cancel()
-                worker.quit()
                 worker.wait(2000)
             worker.deleteLater()
         self._workers.clear()

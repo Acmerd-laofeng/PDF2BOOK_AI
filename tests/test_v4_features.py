@@ -317,7 +317,7 @@ class TestConstantsV4:
 
     def test_version_4(self):
         from app.constants import APP_VERSION
-        assert APP_VERSION == "4.0.6"
+        assert APP_VERSION == "4.0.7"
 
     def test_chapter_patterns_expanded(self):
         from app.constants import CHAPTER_PATTERNS
