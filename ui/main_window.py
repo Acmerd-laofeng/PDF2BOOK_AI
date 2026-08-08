@@ -14,6 +14,7 @@ from PySide6.QtGui import QIcon
 
 from ui.pages.home_page import HomePage
 from ui.pages.convert_page import ConvertPage
+from ui.pages.format_convert_page import FormatConvertPage
 from ui.pages.library_page import LibraryPage
 from ui.pages.task_page import TaskPage
 from ui.pages.setting_page import SettingPage
@@ -55,6 +56,8 @@ class MainWindow(FluentWindow):
         self.home_page.setObjectName("home_page")
         self.convert_page = ConvertPage()
         self.convert_page.setObjectName("convert_page")
+        self.format_convert_page = FormatConvertPage()
+        self.format_convert_page.setObjectName("format_convert_page")
         self.library_page = LibraryPage()
         self.library_page.setObjectName("library_page")
         self.task_page = TaskPage()
@@ -66,6 +69,7 @@ class MainWindow(FluentWindow):
         """配置左侧导航栏"""
         self.addSubInterface(self.home_page, FluentIcon.HOME, "首页")
         self.addSubInterface(self.convert_page, FluentIcon.DOCUMENT, "转换")
+        self.addSubInterface(self.format_convert_page, FluentIcon.SEND, "格式转换")
         self.addSubInterface(self.library_page, FluentIcon.BOOK_SHELF, "书库")
         self.addSubInterface(self.task_page, FluentIcon.SYNC, "任务")
         self.addSubInterface(
@@ -256,6 +260,7 @@ class MainWindow(FluentWindow):
         page_map = {
             "home": self.home_page,
             "convert": self.convert_page,
+            "format_convert": self.format_convert_page,
             "library": self.library_page,
             "task": self.task_page,
             "setting": self.setting_page,
