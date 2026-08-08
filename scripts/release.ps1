@@ -41,7 +41,7 @@ Write-Host "  已推送 $tag"
 
 # 3. PyInstaller 打包
 Write-Host "`n[3/6] PyInstaller 打包..." -ForegroundColor Yellow
-pyinstaller PDF2BOOK_AI.spec --noconfirm
+& "D:\Python\python.exe" -m PyInstaller PDF2BOOK_AI.spec --noconfirm
 $exePath = "dist\PDF2BOOK_AI.exe"
 if (-not (Test-Path $exePath)) { throw "PyInstaller 打包失败：$exePath 不存在" }
 Write-Host "  生成：$exePath ($([math]::Round((Get-Item $exePath).Length/1MB,1))MB)"
@@ -82,16 +82,15 @@ if (-not $GithubToken) {
     $releaseId = $resp.id
     Write-Host "  Release 创建成功：ID=$releaseId"
 
-    # 上传 asset
-    $fileBytes = [System.IO.File]::ReadAllBytes((Resolve-Path $installerPath))
-    $uploadHeaders = @{
-        "Authorization" = "Bearer $GithubToken"
-        "Accept" = "application/vnd.github+json"
-        "Content-Type" = "application/octet-stream"
-    }
+    # 上传 asset（用 curl 避免 PowerShell ReadAllBytes OOM）
     $uploadUrl = "https://uploads.github.com/repos/Acmerd-laofeng/PDF2BOOK_AI/releases/$releaseId/assets?name=PDF2BOOK_AI_Setup.exe"
-    $uploadResp = Invoke-RestMethod -Uri $uploadUrl -Headers $uploadHeaders -Method Post -Body $fileBytes
-    Write-Host "  安装包上传成功：$($uploadResp.state)"
+    $uploadResp = curl.exe -s -X Post `
+      -H "Authorization: Bearer $GithubToken" `
+      -H "Accept: application/vnd.github+json" `
+      -H "Content-Type: application/octet-stream" `
+      --data-binary "@$installerPath" `
+      $uploadUrl
+    Write-Host "  安装包上传完成"
 
     # 如果是最新版本，删除旧 Release 的同名 asset（避免冗余）
     Write-Host "  releases/latest/download/PDF2BOOK_AI_Setup.exe 已指向 $tag"
