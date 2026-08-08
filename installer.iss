@@ -43,7 +43,7 @@ PrivilegesRequiredOverridesAllowed=dialog
 
 ; 输出设置
 OutputDir=installer_output
-OutputBaseFilename=PDF2BOOK_AI_Setup_v4.0
+OutputBaseFilename=PDF2BOOK_AI_Setup
 Compression=lzma2/ultra
 SolidCompression=yes
 LZMANumBlockThreads=4
