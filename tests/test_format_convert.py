@@ -20,7 +20,6 @@ from engines.exporters import get_exporter, export_document
 from engines.export.txt_exporter import TXTExporter
 from engines.export.epub_exporter import EPUBExporter
 from engines.export.pdf_exporter import PDFExporter
-from engines.export.mobi_exporter import MOBIExporter
 from core.format_pipeline import FormatPipeline
 from core.format_converter import FormatConverterService
 from app.format_constants import (
@@ -142,9 +141,10 @@ class TestExporters:
         exporter = get_exporter("pdf")
         assert isinstance(exporter, PDFExporter)
 
-    def test_get_exporter_mobi(self):
-        exporter = get_exporter("mobi")
-        assert isinstance(exporter, MOBIExporter)
+    def test_get_exporter_mobi_not_supported(self):
+        """MOBI 导出不支持"""
+        with pytest.raises(ValueError, match="不支持"):
+            get_exporter("mobi")
 
     def test_get_exporter_unsupported(self):
         with pytest.raises(ValueError, match="不支持"):
@@ -287,7 +287,7 @@ class TestFormatConverterService:
         targets = service.get_supported_targets("pdf")
         assert "epub" in targets
         assert "txt" in targets
-        assert "mobi" in targets
+        assert "mobi" not in targets  # MOBI 不可作为导出目标
         assert "pdf" not in targets  # 不能转自己
 
     def test_get_supported_targets_txt(self):
@@ -322,10 +322,14 @@ class TestFormatConstants:
         assert set(SUPPORTED_FORMATS) == {"pdf", "epub", "txt", "mobi"}
 
     def test_conversion_matrix(self):
-        # 每种格式不能转为自己
+        # PDF/EPUB/TXT 可互转，MOBI 只能读取不能导出
         for src, targets in FORMAT_CONVERSION_MATRIX.items():
             assert src not in targets
-            assert len(targets) == 3  # 每种格式可转 3 种
+            if src == "mobi":
+                assert len(targets) == 3  # MOBI 可转 3 种
+            else:
+                assert len(targets) == 2  # 其他格式可转 2 种（不含 MOBI）
+            assert "mobi" not in targets  # 任何格式都不能转为 MOBI
 
     def test_format_labels(self):
         for fmt in SUPPORTED_FORMATS:

@@ -6,10 +6,10 @@ SUPPORTED_FORMATS = ["pdf", "epub", "txt", "mobi"]
 
 # 格式转换矩阵：source_format → [target_formats]
 FORMAT_CONVERSION_MATRIX = {
-    "pdf":  ["epub", "txt", "mobi"],
-    "epub": ["pdf", "txt", "mobi"],
-    "txt":  ["epub", "pdf", "mobi"],
-    "mobi": ["epub", "txt", "pdf"],
+    "pdf":  ["epub", "txt"],
+    "epub": ["pdf", "txt"],
+    "txt":  ["epub", "pdf"],
+    "mobi": ["epub", "txt", "pdf"],   # MOBI 可作为源格式读取，但不作为导出目标
 }
 
 # 格式显示名
@@ -31,9 +31,9 @@ FORMAT_ICONS = {
 # 格式描述
 FORMAT_DESCRIPTIONS = {
     "pdf":  "PDF 文档 — 适合打印和固定排版",
-    "epub": "EPUB 电子书 — 自适应屏幕，适合阅读器",
+    "epub": "EPUB 电子书 — 自适应屏幕，Kindle 推荐",
     "txt":  "纯文本 — 最小体积，最大兼容",
-    "mobi": "MOBI 电子书 — Kindle 旧版兼容",
+    "mobi": "MOBI 电子书 — 已过时（Kindle 2022 起停止支持，可读取但不导出）",
 }
 
 # TXT 分章正则（从 TXT 转换时用于自动分章）

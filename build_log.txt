@@ -1,0 +1,302 @@
+﻿python.exe : 128 INFO: PyInstaller: 6.19.0, contrib hooks: 2026.3
+所在位置 行:4 字符: 1
++ & "D:\Python\python.exe" -m PyInstaller PDF2BOOK_AI.spec --noconfirm  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (128 INFO: PyIns...b hooks: 2026.3:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+128 INFO: Python: 3.12.6
+153 INFO: Platform: Windows-11-10.0.26200-SP0
+153 INFO: Python environment: D:\Python
+
+[1;33m馃摙 Tips:[0m QFluentWidgets Pro is now released. Click [1;96mhttps://qfluentwidgets.com/pages/pro[0m to learn more about it.
+
+3939 INFO: Module search paths (PYTHONPATH):
+['D:\\000.下载内容\\工具箱\\pdf-to-epub\\PDF2BOOK_AI',
+ 'D:\\Python\\python312.zip',
+ 'D:\\Python\\DLLs',
+ 'D:\\Python\\Lib',
+ 'D:\\Python',
+ 'C:\\Users\\Admin\\AppData\\Roaming\\Python\\Python312\\site-packages',
+ 'D:\\Python\\Lib\\site-packages',
+ 'D:\\Python\\Lib\\site-packages\\win32',
+ 'D:\\Python\\Lib\\site-packages\\win32\\lib',
+ 'D:\\Python\\Lib\\site-packages\\Pythonwin',
+ 'D:\\000.下载内容\\工具箱\\pdf-to-epub\\PDF2BOOK_AI']
+4903 INFO: Appending 'datas' from .spec
+4907 INFO: checking Analysis
+5124 INFO: Building because excludes changed
+5124 INFO: Looking for Python shared library...
+5124 INFO: Using Python shared library: D:\Python\python312.dll
+5124 INFO: Running Analysis Analysis-00.toc
+5124 INFO: Target bytecode optimization level: 0
+5124 INFO: Initializing module dependency graph...
+5125 INFO: Initializing module graph hook caches...
+5134 INFO: Analyzing modules for base_library.zip ...
+5920 INFO: Processing standard module hook 'hook-heapq.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks'
+5964 INFO: Processing standard module hook 'hook-encodings.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks
+'
+6884 INFO: Processing standard module hook 'hook-pickle.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks'
+7619 INFO: Caching module dependency graph...
+7654 INFO: Analyzing D:\000.下载内容\工具箱\pdf-to-epub\PDF2BOOK_AI\main.py
+7658 INFO: Processing standard module hook 'hook-PySide6.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks'
+7777 INFO: Processing standard module hook 'hook-shiboken6.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks
+'
+7862 INFO: Processing standard module hook 'hook-PySide6.QtNetwork.py' from 'D:\\Python\\Lib\\site-packages\\PyInstalle
+r\\hooks'
+9161 INFO: Processing standard module hook 'hook-PySide6.QtCore.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\
+hooks'
+11406 INFO: Processing standard module hook 'hook-PySide6.QtWidgets.py' from 'D:\\Python\\Lib\\site-packages\\PyInstall
+er\\hooks'
+13557 INFO: Processing standard module hook 'hook-PySide6.QtGui.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\
+hooks'
+39317 INFO: Processing standard module hook 'hook-sqlite3.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks'
+39658 INFO: Processing standard module hook 'hook-platform.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks
+'
+39679 INFO: Processing standard module hook 'hook-_ctypes.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks'
+39765 INFO: Processing standard module hook 'hook-PySide6.QtXml.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\
+hooks'
+40180 INFO: Processing standard module hook 'hook-PySide6.QtSvg.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\
+hooks'
+41270 INFO: Processing standard module hook 'hook-PySide6.QtSvgWidgets.py' from 'D:\\Python\\Lib\\site-packages\\PyInst
+aller\\hooks'
+42249 INFO: Processing standard module hook 'hook-numpy.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks'
+42665 INFO: Processing standard module hook 'hook-difflib.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks'
+42944 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'D:\\Python\\Lib\\site-packages\\PyInst
+aller\\hooks'
+43086 INFO: Processing standard module hook 'hook-xml.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks'
+43998 INFO: Processing standard module hook 'hook-sysconfig.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hook
+s'
+44460 INFO: Processing standard module hook 'hook-psutil.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_c
+ontrib\\stdhooks'
+45237 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'D:\\Python\\Lib\\site-packages\\Py
+Installer\\hooks\\pre_safe_import_module'
+45238 INFO: SetuptoolsInfo: initializing cached setuptools info...
+47948 INFO: Processing standard module hook 'hook-charset_normalizer.py' from 'D:\\Python\\Lib\\site-packages\\_pyinsta
+ller_hooks_contrib\\stdhooks'
+48270 INFO: Processing standard module hook 'hook-PIL.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks'
+48364 INFO: Processing standard module hook 'hook-PIL.Image.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hook
+s'
+48649 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from 'D:\\Python\\Lib\\site-packages\\PyIn
+staller\\hooks'
+48730 INFO: Processing standard module hook 'hook-xml.dom.domreg.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\
+\hooks'
+49186 INFO: Processing standard module hook 'hook-PIL.ImageFilter.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller
+\\hooks'
+49736 INFO: Processing standard module hook 'hook-lxml.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_con
+trib\\stdhooks'
+49990 INFO: Processing standard module hook 'hook-lxml.etree.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hoo
+ks_contrib\\stdhooks'
+50322 INFO: Processing standard module hook 'hook-chardet.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_
+contrib\\stdhooks'
+55902 INFO: Processing standard module hook 'hook-pandas.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks'
+57124 INFO: Processing standard module hook 'hook-pytz.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks'
+58611 INFO: Processing standard module hook 'hook-pyarrow.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_
+contrib\\stdhooks'
+59271 INFO: Processing standard module hook 'hook-urllib3.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_
+contrib\\stdhooks'
+59304 INFO: Processing pre-safe-import-module hook 'hook-urllib3.packages.six.moves.py' from 'D:\\Python\\Lib\\site-pac
+kages\\PyInstaller\\hooks\\pre_safe_import_module'
+59801 INFO: Processing standard module hook 'hook-cryptography.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_h
+ooks_contrib\\stdhooks'
+64597 INFO: hook-cryptography: cryptography does not seem to be using dynamically linked OpenSSL.
+64843 INFO: Processing standard module hook 'hook-bcrypt.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_c
+ontrib\\stdhooks'
+64878 INFO: Processing standard module hook 'hook-certifi.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_
+contrib\\stdhooks'
+64991 INFO: Processing standard module hook 'hook-fsspec.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_c
+ontrib\\stdhooks'
+65571 INFO: Processing standard module hook 'hook-numba.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_co
+ntrib\\stdhooks'
+65594 INFO: Processing standard module hook 'hook-llvmlite.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks
+_contrib\\stdhooks'
+66185 INFO: Processing standard module hook 'hook-pygments.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks
+'
+67236 INFO: Processing standard module hook 'hook-pycparser.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hook
+s_contrib\\stdhooks'
+67959 INFO: Processing standard module hook 'hook-setuptools.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hoo
+ks'
+67971 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from 'D:\\Python\\Lib\\site-packages\\PyInstalle
+r\\hooks\\pre_safe_import_module'
+68000 INFO: Processing pre-safe-import-module hook 'hook-jaraco.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\
+hooks\\pre_safe_import_module'
+68000 INFO: Setuptools: 'jaraco' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.
+jaraco'!
+68258 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from 'D:\\Python\\Lib\\site-packages\\PyIns
+taller\\hooks\\pre_safe_import_module'
+68258 INFO: Setuptools: 'more_itertools' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vend
+or.more_itertools'!
+68429 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from 'D:\\Python\\Lib\\site-packages\\PyInstalle
+r\\hooks\\pre_safe_import_module'
+68588 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from 'D:\\Python\\Lib\\site-packag
+es\\PyInstaller\\hooks'
+68591 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from 'D:\\Python\\Lib\\site-packages\\
+PyInstaller\\hooks\\pre_safe_import_module'
+68599 INFO: Processing pre-safe-import-module hook 'hook-backports.py' from 'D:\\Python\\Lib\\site-packages\\PyInstalle
+r\\hooks\\pre_safe_import_module'
+68599 INFO: Setuptools: 'backports' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vend
+or.backports'!
+68736 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from 'D:\\Python\\Lib\\site-packages\\P
+yInstaller\\hooks\\pre_safe_import_module'
+68764 INFO: Processing standard module hook 'hook-importlib_metadata.py' from 'D:\\Python\\Lib\\site-packages\\PyInstal
+ler\\hooks'
+68789 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\ho
+oks\\pre_safe_import_module'
+68992 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\h
+ooks\\pre_safe_import_module'
+68995 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'
+!
+69505 INFO: Processing standard module hook 'hook-pkg_resources.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\
+hooks'
+69778 INFO: Processing pre-safe-import-module hook 'hook-platformdirs.py' from 'D:\\Python\\Lib\\site-packages\\PyInsta
+ller\\hooks\\pre_safe_import_module'
+69786 INFO: Processing standard module hook 'hook-platformdirs.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_h
+ooks_contrib\\stdhooks'
+69930 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\h
+ooks\\pre_safe_import_module'
+72269 INFO: Processing standard module hook 'hook-jinja2.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_c
+ontrib\\stdhooks'
+75215 INFO: Processing pre-safe-import-module hook 'hook-win32com.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstalle
+r_hooks_contrib\\pre_safe_import_module'
+75284 INFO: Processing standard module hook 'hook-win32com.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks
+_contrib\\stdhooks'
+75285 INFO: Processing standard module hook 'hook-pythoncom.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hook
+s_contrib\\stdhooks'
+75353 INFO: Processing standard module hook 'hook-pywintypes.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hoo
+ks_contrib\\stdhooks'
+76720 INFO: Processing standard module hook 'hook-pandas.io.formats.style.py' from 'D:\\Python\\Lib\\site-packages\\PyI
+nstaller\\hooks'
+79999 INFO: Processing standard module hook 'hook-openpyxl.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks
+_contrib\\stdhooks'
+82035 INFO: Processing standard module hook 'hook-sqlalchemy.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hoo
+ks'
+85000 INFO: Processing standard module hook 'hook-pandas.io.clipboard.py' from 'D:\\Python\\Lib\\site-packages\\PyInsta
+ller\\hooks'
+85038 INFO: Processing standard module hook 'hook-pandas.plotting.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller
+\\hooks'
+85484 INFO: Processing standard module hook 'hook-dateutil.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks
+_contrib\\stdhooks'
+85544 INFO: Processing pre-safe-import-module hook 'hook-six.moves.py' from 'D:\\Python\\Lib\\site-packages\\PyInstalle
+r\\hooks\\pre_safe_import_module'
+85831 INFO: Processing standard module hook 'hook-pytest.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_c
+ontrib\\stdhooks'
+85988 INFO: Processing standard module hook 'hook-py.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_contr
+ib\\stdhooks'
+86806 INFO: Processing standard module hook 'hook-cv2.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_cont
+rib\\stdhooks'
+87183 INFO: Processing standard module hook 'hook-onnxruntime.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_ho
+oks_contrib\\stdhooks'
+87261 INFO: Processing pre-safe-import-module hook 'hook-tensorflow.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstal
+ler_hooks_contrib\\pre_safe_import_module'
+87322 INFO: Processing standard module hook 'hook-shapely.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_
+contrib\\stdhooks'
+87434 INFO: Analyzing hidden import 'ebooklib.plugins'
+87435 INFO: Analyzing hidden import 'ebooklib.plugins.base'
+87435 INFO: Analyzing hidden import 'ebooklib.plugins.booktype'
+87438 INFO: Analyzing hidden import 'ebooklib.plugins.sourcecode'
+87439 INFO: Analyzing hidden import 'ebooklib.plugins.standard'
+87443 INFO: Analyzing hidden import 'ebooklib.plugins.tidyhtml'
+87445 INFO: Analyzing hidden import 'bs4.diagnose'
+87449 INFO: Analyzing hidden import 'lxml._elementpath'
+87454 INFO: Analyzing hidden import 'qfluentwidgets.multimedia'
+87501 INFO: Processing standard module hook 'hook-PySide6.QtMultimedia.py' from 'D:\\Python\\Lib\\site-packages\\PyInst
+aller\\hooks'
+91448 INFO: Processing standard module hook 'hook-PySide6.QtMultimediaWidgets.py' from 'D:\\Python\\Lib\\site-packages\
+\PyInstaller\\hooks'
+92378 INFO: Processing module hooks (post-graph stage)...
+92785 INFO: Processing standard module hook 'hook-pydantic.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks
+_contrib\\stdhooks'
+D:\Python\Lib\site-packages\pydantic\experimental\__init__.py:7: PydanticExperimentalWarning: This module is experiment
+al, its contents are subject to change and deprecation.
+  warnings.warn(
+93333 INFO: Processing standard module hook 'hook-rich.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_con
+trib\\stdhooks'
+94161 INFO: Processing standard module hook 'hook-zoneinfo.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks
+_contrib\\stdhooks'
+94411 INFO: Processing standard module hook 'hook-anyio.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_co
+ntrib\\stdhooks'
+95449 INFO: Processing standard module hook 'hook-dns.rdata.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hook
+s_contrib\\stdhooks'
+96719 INFO: Processing standard module hook 'hook-lxml.isoschematron.py' from 'D:\\Python\\Lib\\site-packages\\_pyinsta
+ller_hooks_contrib\\stdhooks'
+97434 INFO: Processing standard module hook 'hook-PIL.SpiderImagePlugin.py' from 'D:\\Python\\Lib\\site-packages\\PyIns
+taller\\hooks'
+98591 INFO: Processing standard module hook 'hook-sqlalchemy.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hoo
+ks'
+99047 WARNING: Hidden import "pysqlite2" not found!
+99047 WARNING: Hidden import "MySQLdb" not found!
+99050 INFO: Processing standard module hook 'hook-psycopg2.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks
+_contrib\\stdhooks'
+100295 INFO: Processing standard module hook 'hook-lxml.objectify.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstalle
+r_hooks_contrib\\stdhooks'
+100296 WARNING: Hidden import "mx.DateTime" not found!
+100296 INFO: Processing standard module hook 'hook-tzdata.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_
+contrib\\stdhooks'
+100871 INFO: Performing binary vs. data reclassification (2223 entries)
+101205 INFO: Looking for ctypes DLLs
+101208 WARNING: Ignoring AppKit.framework/AppKit imported from D:\Python\Lib\site-packages\darkdetect\_mac_detect.py - 
+only basenames are supported with ctypes imports!
+101509 INFO: Analyzing run-time hooks ...
+101523 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks\\rth
+ooks'
+101525 INFO: Including run-time hook 'pyi_rth_pyside6.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks\\rth
+ooks'
+101526 INFO: Processing pre-find-module-path hook 'hook-_pyi_rth_utils.py' from 'D:\\Python\\Lib\\site-packages\\PyInst
+aller\\hooks\\pre_find_module_path'
+101528 INFO: Processing standard module hook 'hook-_pyi_rth_utils.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller
+\\hooks'
+101531 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks\\rth
+ooks'
+101535 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\ho
+oks\\rthooks'
+101537 INFO: Including run-time hook 'pyi_rth_pywintypes.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_c
+ontrib\\rthooks'
+101538 INFO: Including run-time hook 'pyi_rth_pythoncom.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstaller_hooks_co
+ntrib\\rthooks'
+101539 INFO: Including run-time hook 'pyi_rth_pkgres.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks\\rtho
+oks'
+101543 INFO: Including run-time hook 'pyi_rth_setuptools.py' from 'D:\\Python\\Lib\\site-packages\\PyInstaller\\hooks\\
+rthooks'
+101544 INFO: Including run-time hook 'pyi_rth_cryptography_openssl.py' from 'D:\\Python\\Lib\\site-packages\\_pyinstall
+er_hooks_contrib\\rthooks'
+101658 INFO: Creating base_library.zip...
+101681 INFO: Looking for dynamic libraries
+D:\Python\Lib\site-packages\pydantic\experimental\__init__.py:7: PydanticExperimentalWarning: This module is experiment
+al, its contents are subject to change and deprecation.
+  warnings.warn(
+
+[1;33m馃摙 Tips:[0m QFluentWidgets Pro is now released. Click [1;96mhttps://qfluentwidgets.com/pages/pro[0m to learn more about it.
+
+105771 INFO: Extra DLL search directories (AddDllDirectory): ['D:\\Python\\Lib\\site-packages\\shiboken6', 'D:\\Python\
+\Lib\\site-packages\\numpy.libs', 'D:\\Python\\Lib\\site-packages\\cv2\\../../x64/vc14/bin', 'D:\\Python\\Lib\\site-pac
+kages\\shapely.libs', 'D:\\Python\\Lib\\site-packages\\pandas.libs', 'D:\\Python\\Lib\\site-packages\\pyarrow.libs', 'D
+:\\Python\\Lib\\site-packages\\scipy.libs', 'D:\\Python\\Lib\\site-packages\\llvmlite.libs', 'D:\\Python\\Lib\\site-pac
+kages\\psycopg2_binary.libs']
+105771 INFO: Extra DLL search directories (PATH): ['D:\\Python\\Lib\\site-packages\\cv2\\../../x64/vc14/bin', 'D:\\Pyth
+on\\Lib\\site-packages\\PySide6']
+110007 WARNING: Library not found: could not resolve 'tbb12.dll', dependency of 'D:\\Python\\Lib\\site-packages\\numba\
+\np\\ufunc\\tbbpool.cp312-win_amd64.pyd'.
+110086 INFO: Warnings written to D:\000.下载内容\工具箱\pdf-to-epub\PDF2BOOK_AI\build\PDF2BOOK_AI\warn-PDF2BOOK_AI.txt
+110444 INFO: Graph cross-reference written to D:\000.下载内容\工具箱\pdf-to-epub\PDF2BOOK_AI\build\PDF2BOOK_AI\xref-PDF2BOOK_A
+I.html
+110549 INFO: checking PYZ
+110653 INFO: Building because toc changed
+110653 INFO: Building PYZ (ZlibArchive) D:\000.下载内容\工具箱\pdf-to-epub\PDF2BOOK_AI\build\PDF2BOOK_AI\PYZ-00.pyz
+113752 INFO: Building PYZ (ZlibArchive) D:\000.下载内容\工具箱\pdf-to-epub\PDF2BOOK_AI\build\PDF2BOOK_AI\PYZ-00.pyz completed 
+successfully.
+113846 INFO: checking PKG
+113846 INFO: Building PKG because PKG-00.toc is non existent
+113846 INFO: Building PKG (CArchive) PDF2BOOK_AI.pkg
+190573 INFO: Building PKG (CArchive) PDF2BOOK_AI.pkg completed successfully.
+190612 INFO: Bootloader D:\Python\Lib\site-packages\PyInstaller\bootloader\Windows-64bit-intel\runw.exe
+190612 INFO: checking EXE
+190612 INFO: Building EXE because EXE-00.toc is non existent
+190612 INFO: Building EXE from EXE-00.toc
+190612 INFO: Copying bootloader EXE to D:\000.下载内容\工具箱\pdf-to-epub\PDF2BOOK_AI\dist\PDF2BOOK_AI.exe
+190710 INFO: Copying icon to EXE
+190759 INFO: Copying 0 resources to EXE
+190759 INFO: Embedding manifest in EXE
+190810 INFO: Appending PKG archive to EXE
+191261 INFO: Fixing EXE headers
+209950 INFO: Building EXE from EXE-00.toc completed successfully.
+209989 INFO: Build complete! The results are available in: D:\000.下载内容\工具箱\pdf-to-epub\PDF2BOOK_AI\dist

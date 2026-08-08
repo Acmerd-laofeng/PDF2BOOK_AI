@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
-"""导出器注册表 — 根据目标格式选择导出器"""
+"""导出器注册表 — 根据目标格式选择导出器
+
+MOBI 不作为导出目标（Kindle 2022 起停止 MOBI 支持，全面转向 EPUB）。
+"""
 from engines.exporter_base import BaseExporter
 from engines.document import ParsedDocument
 from engines.export.txt_exporter import TXTExporter
 from engines.export.pdf_exporter import PDFExporter
 from engines.export.epub_exporter import EPUBExporter
-from engines.export.mobi_exporter import MOBIExporter
 
 
-# 格式 → 导出器映射
+# 格式 → 导出器映射（不含 mobi）
 _EXPORTERS = {
     "txt": TXTExporter,
     "pdf": PDFExporter,
     "epub": EPUBExporter,
-    "mobi": MOBIExporter,
 }
 
 
