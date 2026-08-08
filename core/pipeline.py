@@ -85,6 +85,13 @@ class Pipeline:
             if settings.quality == "ai":
                 settings.enable_ai_correct = True
 
+        # 提取导出目录（ConvertSettings 没有此字段，从 task.settings dict 中取）
+        settings_output_dir = ""
+        if isinstance(task.settings, dict):
+            settings_output_dir = task.settings.get("output_dir", "")
+        elif hasattr(task.settings, 'output_dir'):
+            settings_output_dir = task.settings.output_dir or ""
+
         start_time = time.time()
 
         # 日志辅助
@@ -247,7 +254,16 @@ class Pipeline:
             event_bus.progress.emit(task.filename, 92)
 
             book_title = task.filename.rsplit(".", 1)[0]
-            epub_path = task.output_path or f"{book_title}.epub"
+
+            # 导出路径优先级：task.output_path > settings.output_dir > PDF 同级目录
+            if task.output_path:
+                epub_path = task.output_path
+            elif settings_output_dir:
+                epub_path = str(Path(settings_output_dir) / f"{book_title}.epub")
+            else:
+                # 默认导出到 PDF 同级目录
+                pdf_parent = Path(task.pdf_path).parent
+                epub_path = str(pdf_parent / f"{book_title}.epub")
 
             # 确保输出目录存在
             output_dir = Path(epub_path).parent

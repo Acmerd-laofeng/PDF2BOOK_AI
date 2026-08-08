@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """转换中心 - 模式选择 + 高级设置 + 进度 + 日志"""
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QHBoxLayout, QTextEdit
+    QWidget, QVBoxLayout, QLabel, QHBoxLayout, QTextEdit, QScrollArea
 )
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from qfluentwidgets import (
-    ComboBox, ProgressBar, PushButton, SpinBox, SwitchButton,
+    ComboBox, ProgressBar, PushButton, SpinBox, SwitchButton, LineEdit,
     TitleLabel, SubtitleLabel, BodyLabel, CardWidget,
     FluentIcon as FIF,
 )
@@ -25,7 +25,20 @@ class ConvertPage(QWidget):
         self._init_ui()
 
     def _init_ui(self):
-        layout = QVBoxLayout(self)
+        # 外层布局：只放一个 ScrollArea
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+
+        # ScrollArea 包裹所有内容
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QScrollArea.NoFrame)
+
+        # 内容容器
+        container = QWidget()
+        layout = QVBoxLayout(container)
         layout.setSpacing(16)
         layout.setContentsMargins(40, 30, 40, 30)
 
@@ -92,6 +105,7 @@ class ConvertPage(QWidget):
         switch_layout = QHBoxLayout()
 
         chapter_col = QVBoxLayout()
+        chapter_col.setSpacing(4)
         chapter_col.addWidget(BodyLabel("章节标题检测"))
         self.chapter_switch = SwitchButton()
         self.chapter_switch.setChecked(True)
@@ -99,6 +113,7 @@ class ConvertPage(QWidget):
         switch_layout.addLayout(chapter_col)
 
         cross_col = QVBoxLayout()
+        cross_col.setSpacing(4)
         cross_col.addWidget(BodyLabel("跨页断行合并"))
         self.cross_page_switch = SwitchButton()
         self.cross_page_switch.setChecked(True)
@@ -132,6 +147,40 @@ class ConvertPage(QWidget):
         theme_layout.addLayout(theme_row)
 
         layout.addWidget(theme_card)
+
+        # === 导出路径 ===
+        output_card = CardWidget()
+        output_layout = QVBoxLayout(output_card)
+        output_layout.setContentsMargins(20, 16, 20, 16)
+        output_layout.setSpacing(10)
+
+        output_title = BodyLabel("导出路径")
+        output_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #fff;")
+        output_layout.addWidget(output_title)
+
+        output_row = QHBoxLayout()
+        output_row.setSpacing(8)
+
+        self.output_path_edit = LineEdit()
+        self.output_path_edit.setPlaceholderText("留空则导出到 PDF 同级目录")
+        self.output_path_edit.setText(self._load_default_output_dir())
+        output_row.addWidget(self.output_path_edit, stretch=1)
+
+        self.btn_browse = PushButton("浏览")
+        self.btn_browse.setFixedHeight(33)
+        self.btn_browse.setFixedWidth(80)
+        self.btn_browse.setIcon(FIF.FOLDER)
+        self.btn_browse.clicked.connect(self._on_browse_output)
+        output_row.addWidget(self.btn_browse)
+
+        output_layout.addLayout(output_row)
+
+        # 提示
+        lbl_output_hint = BodyLabel("默认导出到输入文件的同一层级")
+        lbl_output_hint.setStyleSheet("color: #888; font-size: 13px;")
+        output_layout.addWidget(lbl_output_hint)
+
+        layout.addWidget(output_card)
 
         # === 进度 + 日志 ===
         progress_card = CardWidget()
@@ -177,6 +226,21 @@ class ConvertPage(QWidget):
 
         layout.addStretch()
 
+        scroll.setWidget(container)
+        outer.addWidget(scroll)
+
+    def _load_default_output_dir(self) -> str:
+        """从配置加载默认导出目录"""
+        from app.config import Config
+        return Config.get_output_dir()
+
+    def _on_browse_output(self):
+        """选择导出目录"""
+        from PySide6.QtWidgets import QFileDialog
+        dir_path = QFileDialog.getExistingDirectory(self, "选择导出目录")
+        if dir_path:
+            self.output_path_edit.setText(dir_path)
+
     def _on_mode_changed(self):
         self._update_mode_desc()
 
@@ -200,6 +264,9 @@ class ConvertPage(QWidget):
     def _on_start_clicked(self):
         settings = self.get_settings()
         self.append_log(f"开始转换 · 模式={settings['quality']} · DPI={settings['dpi']}")
+        # 保存导出路径到配置
+        from app.config import Config
+        Config.set_output_dir(settings['output_dir'])
         self.start_conversion.emit(settings)
 
     def set_pdf_info(self, pdf_path: str):
@@ -224,6 +291,7 @@ class ConvertPage(QWidget):
             "detect_chapters": self.chapter_switch.isChecked(),
             "merge_cross_page": self.cross_page_switch.isChecked(),
             "epub_theme": self._selected_theme,
+            "output_dir": self.output_path_edit.text().strip(),
         }
 
     def update_progress(self, value: int):

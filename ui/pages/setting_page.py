@@ -143,6 +143,12 @@ class SettingPage(QWidget):
         self.default_format.addItems(["EPUB", "EPUB3", "MOBI", "HTML", "Markdown", "TXT"])
         epub_layout.addWidget(self.default_format)
 
+        epub_layout.addWidget(BodyLabel("默认导出目录"))
+        self.output_dir = LineEdit()
+        self.output_dir.setPlaceholderText("留空则导出到 PDF 同级目录")
+        self.output_dir.setText(Config.get_output_dir())
+        epub_layout.addWidget(self.output_dir)
+
         layout.addWidget(epub_card)
 
         # === AI 配置 ===
@@ -317,7 +323,10 @@ class SettingPage(QWidget):
             "merge_cross_page": self.merge_cross_page.isChecked(),
             "epub_theme": self._theme_keys[self.default_theme.currentIndex()],
             "export_format": self.default_format.currentText(),
+            "output_dir": self.output_dir.text().strip(),
         }
+
+        Config.set_output_dir(self.output_dir.text().strip())
 
         # AI 配置持久化
         provider_map = {0: "none", 1: "gemini"}

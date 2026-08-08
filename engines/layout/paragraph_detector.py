@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-"""段落检测器 - 从 v2 迁移并增强
+"""段落检测器 - v4.1 改进版
 
-核心算法：
+核心改进：
+1. heading 判断更严格：必须同时满足居中+短行+无标点+有句号/问号结尾的上下文
+2. 同页行合并：相邻行如果缩进相近、间距正常，合并为同一段落
+3. 跨页断行合并保持不变
+
+检测算法：
 1. 首行缩进检测（x_left - body_x > threshold）
 2. 大间距检测（gap > avg_gap * multiplier）
-3. 居中+短行 = 章节标题
+3. 居中+短行+无标点 = 章节标题（严格条件）
 4. 右半部分+短行 = 签名/落款
 5. 底部纯数字 = 页码（过滤）
 6. 跨页断行合并（句末标点检测）
-
-v3 改进：
-- 阈值参数化（不再硬编码）
-- 输入为 OCRBlock 列表（标准化）
-- 输出为 (type, text) 列表
 """
 import re
 from typing import List, Tuple
@@ -29,7 +29,7 @@ from app.constants import (
 
 
 class ParagraphDetector:
-    """段落检测器"""
+    """段落检测器 v4.1"""
 
     def __init__(self):
         self.indent_threshold = DEFAULT_INDENT_THRESHOLD
@@ -117,34 +117,93 @@ class ParagraphDetector:
                 filtered.append(b)
         return filtered
 
+    def _is_heading(self, line: OCRBlock, page_w: float, avg_gap: float,
+                    lines: List[OCRBlock], idx: int) -> bool:
+        """严格判断是否为标题
+
+        必须同时满足：
+        1. 居中（x_center 在页面中心附近）
+        2. 短行（宽度 < 页面宽度 * short_line_ratio）
+        3. 无标点（不以句号/逗号等结尾）
+        4. 文字较短（< 30 字符）
+        5. 前后有大间距（与相邻行间距明显大于平均间距）
+        """
+        text = line.text.strip()
+        if len(text) >= 30:
+            return False
+        if len(text) < 2:
+            return False
+
+        # 居中检测
+        is_centered = abs(line.x_center - page_w / 2) < page_w * self.center_tolerance
+        if not is_centered:
+            return False
+
+        # 短行检测
+        is_short = line.width < page_w * self.short_line_ratio
+        if not is_short:
+            return False
+
+        # 无标点检测（标题通常不含句末标点）
+        if re.search(r'[。，；：、,;:！？…]', text):
+            return False
+
+        # 上下文检测：前后有大间距（标题通常前后留白）
+        # 如果是第一行或最后一行，放宽要求
+        has_large_gap_before = True if idx == 0 else False
+        has_large_gap_after = True if idx == len(lines) - 1 else False
+
+        if idx > 0 and avg_gap > 0:
+            gap_before = line.y_top - lines[idx - 1].y_bot
+            if gap_before > avg_gap * self.gap_multiplier:
+                has_large_gap_before = True
+
+        if idx < len(lines) - 1 and avg_gap > 0:
+            gap_after = lines[idx + 1].y_top - line.y_bot
+            if gap_after > avg_gap * self.gap_multiplier:
+                has_large_gap_after = True
+
+        # 至少有一个方向的大间距（前或后）
+        return has_large_gap_before or has_large_gap_after
+
     def _segment(self, lines: List[OCRBlock], page_w: float,
                  body_x: float, avg_gap: float) -> List[Tuple[str, str]]:
-        """分段检测"""
+        """分段检测 - v4.1 改进版
+
+        核心改进：
+        1. heading 判断更严格（_is_heading 方法）
+        2. 行合并逻辑：相邻行如果间距正常且没有新段落信号，合并为同一段
+        """
         paragraphs = []
         current_para: List[OCRBlock] = []
         current_type = 'body'
 
         for idx, line in enumerate(lines):
-            is_new_para = False  # v2 兼容：第一行不强制新段落
+            is_new_para = False
             para_type = 'body'
 
-            # 首行缩进
+            # 严格标题检测
+            if self.detect_chapters and self._is_heading(line, page_w, avg_gap, lines, idx):
+                # 标题单独成段
+                if current_para:
+                    para_text = ''.join(b.text for b in current_para)
+                    if para_text.strip():
+                        paragraphs.append((current_type, para_text))
+                    current_para = []
+                paragraphs.append(('heading', line.text))
+                current_type = 'body'
+                continue
+
+            # 首行缩进检测
             indent = line.x_left - body_x
             if indent > self.indent_threshold:
                 is_new_para = True
 
-            # 大间距
+            # 大间距检测
             if idx > 0 and avg_gap > 0:
                 gap = line.y_top - lines[idx - 1].y_bot
                 if gap > avg_gap * self.gap_multiplier:
                     is_new_para = True
-
-            # 章节标题检测：居中 + 短行
-            if self.detect_chapters:
-                is_centered = abs(line.x_center - page_w / 2) < page_w * self.center_tolerance
-                is_short = line.width < page_w * self.short_line_ratio
-                if is_centered and is_short and len(line.text) < 30:
-                    para_type = 'heading'
 
             # 签名/落款：右半部分短行
             if line.x_left > page_w * 0.5 and len(line.text) < 30:
@@ -157,17 +216,6 @@ class ParagraphDetector:
                     paragraphs.append((current_type, para_text))
                 current_para = []
                 current_type = para_type
-
-            if para_type == 'heading' and is_new_para:
-                # 标题单独成段
-                if current_para:
-                    para_text = ''.join(b.text for b in current_para)
-                    if para_text.strip():
-                        paragraphs.append((current_type, para_text))
-                    current_para = []
-                paragraphs.append(('heading', line.text))
-                current_type = 'body'
-                continue
 
             current_para.append(line)
             current_type = para_type

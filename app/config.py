@@ -107,3 +107,14 @@ class Config:
     @classmethod
     def set_ai_correct_enabled(cls, enabled: bool):
         cls.set("ai_correct_enabled", "true" if enabled else "false")
+
+    # --- 导出路径 ---
+
+    @classmethod
+    def get_output_dir(cls) -> str:
+        """获取默认导出目录（空字符串表示 PDF 同级目录）"""
+        return cls.get("output_dir", "")
+
+    @classmethod
+    def set_output_dir(cls, path: str):
+        cls.set("output_dir", path)
