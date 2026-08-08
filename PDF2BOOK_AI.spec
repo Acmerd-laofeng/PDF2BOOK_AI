@@ -54,7 +54,25 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['tkinter', 'matplotlib', 'scipy', 'torch', 'torchvision', 'torchaudio', 'PIL.ImageTk'],
+    excludes=[
+        'tkinter', 'matplotlib', 'scipy', 'PIL.ImageTk',
+        # torch 全家桶（rapidocr 用 onnxruntime，不需要 torch CUDA）
+        'torch', 'torchvision', 'torchaudio', 'torch._C',
+        # paddle / jax 不是 rapidocr 的必需依赖
+        'paddle', 'paddlepaddle', 'jax', 'jaxlib',
+        # cv2 / opencv 82MB，rapidocr 用 PIL 处理图片
+        'cv2', 'opencv',
+        # imageio_ffmpeg 84MB，不需要
+        'imageio_ffmpeg',
+        # pyarrow 44MB，数据处理库不需要
+        'pyarrow',
+        # psycopg2 PostgreSQL 驱动不需要
+        'psycopg2',
+        # Pythonwin/MFC 不需要
+        'Pythonwin', 'win32ui', 'win32uiole',
+        # PIL AVIF 插件 7.5MB，PDF 不用
+        'PIL._avif',
+    ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
