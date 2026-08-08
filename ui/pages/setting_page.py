@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """设置中心 - 转换质量、主题、OCR参数、AI配置"""
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout
+    QWidget, QVBoxLayout, QHBoxLayout, QScrollArea
 )
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from qfluentwidgets import (
     ComboBox, SpinBox, SwitchButton, LineEdit, PushButton,
     TitleLabel, BodyLabel, CardWidget,
@@ -24,7 +24,20 @@ class SettingPage(QWidget):
         self._load_settings()
 
     def _init_ui(self):
-        layout = QVBoxLayout(self)
+        # 外层布局：只放一个 ScrollArea
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+
+        # ScrollArea 包裹所有内容
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QScrollArea.NoFrame)
+
+        # 内容容器
+        container = QWidget()
+        layout = QVBoxLayout(container)
         layout.setContentsMargins(40, 30, 40, 30)
         layout.setSpacing(16)
 
@@ -85,9 +98,12 @@ class SettingPage(QWidget):
         self.gap_ratio.setText("1.8")
         layout_inner.addWidget(self.gap_ratio)
 
-        # 开关
+        # 开关 — 用固定高度避免挤压
         switch_row = QHBoxLayout()
+        switch_row.setSpacing(24)
+
         col1 = QVBoxLayout()
+        col1.setSpacing(4)
         col1.addWidget(BodyLabel("章节标题检测"))
         self.detect_chapters = SwitchButton()
         self.detect_chapters.setChecked(True)
@@ -95,6 +111,7 @@ class SettingPage(QWidget):
         switch_row.addLayout(col1)
 
         col2 = QVBoxLayout()
+        col2.setSpacing(4)
         col2.addWidget(BodyLabel("跨页断行合并"))
         self.merge_cross_page = SwitchButton()
         self.merge_cross_page.setChecked(True)
@@ -138,38 +155,68 @@ class SettingPage(QWidget):
         ai_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #0078d4;")
         ai_layout.addWidget(ai_title)
 
-        ai_layout.addWidget(BodyLabel("AI 服务"))
+        # API 服务 + 模型 横排
+        ai_row1 = QHBoxLayout()
+        ai_row1.setSpacing(16)
+
+        col_provider = QVBoxLayout()
+        col_provider.setSpacing(4)
+        col_provider.addWidget(BodyLabel("AI 服务"))
         self.api_provider = ComboBox()
         self.api_provider.addItems(["不启用", "Google Gemini"])
-        ai_layout.addWidget(self.api_provider)
+        col_provider.addWidget(self.api_provider)
+        ai_row1.addLayout(col_provider)
 
-        ai_layout.addWidget(BodyLabel("Gemini 模型"))
+        col_model = QVBoxLayout()
+        col_model.setSpacing(4)
+        col_model.addWidget(BodyLabel("Gemini 模型"))
         self.ai_model = ComboBox()
         from app.constants import GEMINI_MODELS
         for key, name in GEMINI_MODELS.items():
             self.ai_model.addItem(name)
-        ai_layout.addWidget(self.ai_model)
+        col_model.addWidget(self.ai_model)
+        ai_row1.addLayout(col_model)
 
-        ai_layout.addWidget(BodyLabel("API Key"))
+        ai_layout.addLayout(ai_row1)
+
+        # API Key + 测试连接 横排
+        ai_row2 = QHBoxLayout()
+        ai_row2.setSpacing(12)
+
+        col_key = QVBoxLayout()
+        col_key.setSpacing(4)
+        col_key.addWidget(BodyLabel("API Key"))
         self.api_key = LineEdit()
-        self.api_key.setPlaceholderText("输入 Gemini API Key（留空则不启用 AI 功能）")
+        self.api_key.setPlaceholderText("输入 Gemini API Key")
         self.api_key.setEchoMode(LineEdit.Password)
-        ai_layout.addWidget(self.api_key)
+        col_key.addWidget(self.api_key)
+        ai_row2.addLayout(col_key, stretch=1)
 
-        # 测试连接按钮
+        col_btn = QVBoxLayout()
+        col_btn.setSpacing(4)
+        col_btn.addWidget(BodyLabel(""))  # 对齐占位
         self.btn_test_ai = PushButton("测试连接")
-        self.btn_test_ai.setFixedHeight(36)
+        self.btn_test_ai.setFixedHeight(33)
+        self.btn_test_ai.setFixedWidth(100)
         self.btn_test_ai.clicked.connect(self._test_ai_connection)
-        ai_layout.addWidget(self.btn_test_ai)
+        col_btn.addWidget(self.btn_test_ai)
+        ai_row2.addLayout(col_btn)
 
+        ai_layout.addLayout(ai_row2)
+
+        # AI 开关横排
         ai_switch_row = QHBoxLayout()
+        ai_switch_row.setSpacing(24)
+
         col_a = QVBoxLayout()
+        col_a.setSpacing(4)
         col_a.addWidget(BodyLabel("OCR AI 纠错"))
         self.ocr_correction = SwitchButton()
         col_a.addWidget(self.ocr_correction)
         ai_switch_row.addLayout(col_a)
 
         col_b = QVBoxLayout()
+        col_b.setSpacing(4)
         col_b.addWidget(BodyLabel("章节摘要"))
         self.chapter_summary = SwitchButton()
         col_b.addWidget(self.chapter_summary)
@@ -191,6 +238,9 @@ class SettingPage(QWidget):
         layout.addLayout(btn_row)
 
         layout.addStretch()
+
+        scroll.setWidget(container)
+        outer.addWidget(scroll)
 
     def _load_settings(self):
         """从配置加载到 UI"""
@@ -234,7 +284,7 @@ class SettingPage(QWidget):
         """测试 Gemini API 连接"""
         key = self.api_key.text().strip()
         if not key:
-            from qfluentwidgets import InfoBar, InfoBarPosition
+            from qfluentwidgets import InfoBar
             InfoBar.warning("提示", "请先输入 API Key", parent=self, duration=3000)
             return
 
@@ -245,7 +295,7 @@ class SettingPage(QWidget):
         from engines.ai.llm_client import LLMClient
         client = LLMClient(api_key=key, model=model)
 
-        from qfluentwidgets import InfoBar, InfoBarPosition
+        from qfluentwidgets import InfoBar
         success, msg = client.test_connection()
         if success:
             InfoBar.success("连接成功", msg, parent=self, duration=5000)
