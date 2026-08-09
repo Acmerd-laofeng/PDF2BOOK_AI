@@ -19,6 +19,7 @@ class HomePage(QWidget):
 
     file_selected = Signal(str)
     start_convert = Signal()
+    navigate_requested = Signal(str)  # 页面名
 
     def __init__(self):
         super().__init__()
@@ -42,6 +43,47 @@ class HomePage(QWidget):
         self.drop_area = PDFDropArea()
         self.drop_area.file_dropped.connect(self._on_file_dropped)
         layout.addWidget(self.drop_area)
+
+        # 快捷功能入口
+        entry_row = QHBoxLayout()
+        entry_row.setSpacing(12)
+
+        entries = [
+            ("📄", "转换", "PDF → EPUB", "convert"),
+            ("🔄", "格式转换", "多格式互转", "format_convert"),
+            ("📚", "书库", "已转换书籍", "library"),
+            ("⚙️", "设置", "配置参数", "setting"),
+        ]
+        for emoji, title, desc, page in entries:
+            entry_card = CardWidget()
+            entry_card.setFixedHeight(70)
+            entry_card.setCursor(Qt.PointingHandCursor)
+            entry_layout = QHBoxLayout(entry_card)
+            entry_layout.setContentsMargins(16, 10, 16, 10)
+            entry_layout.setSpacing(10)
+
+            lbl_emoji = QLabel(emoji)
+            lbl_emoji.setStyleSheet("font-size: 24px;")
+            lbl_emoji.setFixedWidth(32)
+            entry_layout.addWidget(lbl_emoji)
+
+            text_col = QVBoxLayout()
+            text_col.setSpacing(2)
+            lbl_title = BodyLabel(title)
+            lbl_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #fff;")
+            text_col.addWidget(lbl_title)
+            lbl_desc = BodyLabel(desc)
+            lbl_desc.setStyleSheet("font-size: 11px; color: #888;")
+            text_col.addWidget(lbl_desc)
+            entry_layout.addLayout(text_col)
+            entry_layout.addStretch()
+
+            # 点击跳转
+            entry_card.mousePressEvent = lambda e, p=page: self._navigate_to(p)
+
+            entry_row.addWidget(entry_card)
+
+        layout.addLayout(entry_row)
 
         # 分析卡片 + 开始按钮放一行
         content_row = QHBoxLayout()
@@ -110,6 +152,10 @@ class HomePage(QWidget):
         if len(self._recent_cards) > 3:
             old = self._recent_cards.pop(0)
             old.deleteLater()
+
+    def _navigate_to(self, page: str):
+        """触发导航信号"""
+        self.navigate_requested.emit(page)
 
     def update_recent_progress(self, name: str, progress: int):
         """更新最近任务进度"""

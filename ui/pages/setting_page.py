@@ -268,6 +268,79 @@ class SettingPage(QWidget):
 
         layout.addWidget(about_card)
 
+        # === 快捷键 ===
+        hotkey_card = CardWidget()
+        hotkey_layout = QVBoxLayout(hotkey_card)
+        hotkey_layout.setContentsMargins(20, 16, 20, 16)
+        hotkey_layout.setSpacing(8)
+
+        hk_title = BodyLabel("快捷键")
+        hk_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #fff;")
+        hotkey_layout.addWidget(hk_title)
+
+        hotkeys = [
+            ("Ctrl + O", "打开/选择文件"),
+            ("Ctrl + Enter", "开始转换"),
+            ("Ctrl + D", "格式转换页"),
+            ("Ctrl + L", "打开书库"),
+            ("Ctrl + S", "保存设置"),
+            ("Ctrl + ,", "打开设置"),
+            ("Esc", "取消当前任务"),
+        ]
+        for key, desc in hotkeys:
+            row = QHBoxLayout()
+            lbl_key = BodyLabel(key)
+            lbl_key.setStyleSheet("""
+                font-size: 12px;
+                color: #60cdff;
+                background: rgba(0, 120, 212, 0.12);
+                border-radius: 4px;
+                padding: 2px 8px;
+                font-family: Consolas, monospace;
+            """)
+            lbl_key.setFixedHeight(24)
+            row.addWidget(lbl_key)
+            row.addWidget(BodyLabel(desc))
+            row.addStretch()
+            hotkey_layout.addLayout(row)
+
+        layout.addWidget(hotkey_card)
+
+        # === 数据管理 ===
+        data_card = CardWidget()
+        data_layout = QVBoxLayout(data_card)
+        data_layout.setContentsMargins(20, 16, 20, 16)
+        data_layout.setSpacing(12)
+
+        data_title = BodyLabel("数据管理")
+        data_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #fff;")
+        data_layout.addWidget(data_title)
+
+        # 缓存信息 + 清理
+        cache_row = QHBoxLayout()
+        cache_row.setSpacing(12)
+
+        self.lbl_cache_info = BodyLabel("缓存大小：计算中...")
+        self.lbl_cache_info.setStyleSheet("color: #888; font-size: 13px;")
+        cache_row.addWidget(self.lbl_cache_info)
+        cache_row.addStretch()
+
+        self.btn_clear_cache = PushButton("清理缓存")
+        self.btn_clear_cache.setIcon(FIF.DELETE)
+        self.btn_clear_cache.clicked.connect(self._clear_cache)
+        cache_row.addWidget(self.btn_clear_cache)
+
+        data_layout.addLayout(cache_row)
+
+        # 数据库信息
+        self.lbl_db_info = BodyLabel("数据库：计算中...")
+        self.lbl_db_info.setStyleSheet("color: #888; font-size: 13px;")
+        data_layout.addWidget(self.lbl_db_info)
+
+        layout.addWidget(data_card)
+
+        self._update_cache_info()
+
         # === 保存按钮 ===
         btn_row = QHBoxLayout()
         btn_row.addStretch()
@@ -413,3 +486,81 @@ class SettingPage(QWidget):
         from PySide6.QtGui import QDesktopServices
         from PySide6.QtCore import QUrl
         QDesktopServices.openUrl(QUrl("https://github.com/Acmerd-laofeng/PDF2BOOK_AI"))
+
+    def _update_cache_info(self):
+        """更新缓存和数据库大小信息"""
+        import os, tempfile
+        from threading import Thread
+
+        def calc():
+            # 缓存目录
+            cache_dir = os.path.join(tempfile.gettempdir(), "pdf2book_cache")
+            cache_size = 0
+            if os.path.exists(cache_dir):
+                for root, dirs, files in os.walk(cache_dir):
+                    for f in files:
+                        try:
+                            cache_size += os.path.getsize(os.path.join(root, f))
+                        except OSError:
+                            pass
+
+            # 数据库
+            from app.constants import DB_PATH
+            db_size = 0
+            if os.path.exists(DB_PATH):
+                db_size = os.path.getsize(DB_PATH)
+
+            # 格式化
+            def fmt(sz):
+                if sz < 1024:
+                    return f"{sz} B"
+                elif sz < 1024 * 1024:
+                    return f"{sz / 1024:.0f} KB"
+                else:
+                    return f"{sz / 1024 / 1024:.1f} MB"
+
+            cache_str = fmt(cache_size) if cache_size > 0 else "无缓存"
+            db_str = fmt(db_size) if db_size > 0 else "未创建"
+
+            # 在主线程更新 UI
+            from PySide6.QtCore import QMetaObject, Qt, Q_ARG
+            QMetaObject.invokeMethod(self, "_set_cache_info",
+                Qt.QueuedConnection,
+                Q_ARG(str, cache_str), Q_ARG(str, db_str))
+
+        Thread(target=calc, daemon=True).start()
+
+    # 用于跨线程更新 UI 的槽（通过 QMetaObject.invokeMethod 调用）
+    from PySide6.QtCore import Slot
+    @Slot(str, str)
+    def _set_cache_info(self, cache_str: str, db_str: str):
+        self.lbl_cache_info.setText(f"缓存大小：{cache_str}")
+        self.lbl_db_info.setText(f"数据库：{db_str}")
+
+    def _clear_cache(self):
+        """清理缓存"""
+        import os, tempfile, shutil
+        from qfluentwidgets import InfoBar, InfoBarPosition, MessageBoxBase
+        from PySide6.QtWidgets import QMessageBox
+
+        reply = QMessageBox.question(
+            self, "确认清理",
+            "将清理临时缓存文件，不影响已转换的文件和书库数据。\n\n是否继续？",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if reply != QMessageBox.Yes:
+            return
+
+        cache_dir = os.path.join(tempfile.gettempdir(), "pdf2book_cache")
+        cleared = 0
+        if os.path.exists(cache_dir):
+            try:
+                shutil.rmtree(cache_dir)
+                cleared = 1
+            except Exception as e:
+                InfoBar.error("清理失败", str(e), parent=self, duration=5000)
+                return
+
+        InfoBar.success("清理完成", "缓存已清理", parent=self, duration=3000)
+        self._update_cache_info()

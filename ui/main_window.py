@@ -11,7 +11,7 @@ from qfluentwidgets import (
     MessageBox,
 )
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QIcon, QCloseEvent
+from PySide6.QtGui import QIcon, QCloseEvent, QShortcut, QKeySequence
 
 from ui.pages.home_page import HomePage
 from ui.pages.convert_page import ConvertPage
@@ -54,6 +54,39 @@ class MainWindow(FluentWindow):
         # 恢复窗口位置
         self._restore_geometry()
 
+        # 注册快捷键
+        self._init_shortcuts()
+
+    def _init_shortcuts(self):
+        """注册全局快捷键"""
+        shortcuts = [
+            (QKeySequence("Ctrl+O"), lambda: self.navigate_to("home")),
+            (QKeySequence("Ctrl+Return"), self._shortcut_start_convert),
+            (QKeySequence("Ctrl+D"), lambda: self.navigate_to("format_convert")),
+            (QKeySequence("Ctrl+L"), lambda: self.navigate_to("library")),
+            (QKeySequence("Ctrl+S"), lambda: self.setting_page._on_save()),
+            (QKeySequence("Ctrl+Comma"), lambda: self.navigate_to("setting")),
+            (QKeySequence("Escape"), self._shortcut_cancel_task),
+        ]
+        for key, callback in shortcuts:
+            sc = QShortcut(key, self)
+            sc.activated.connect(callback)
+
+    def _shortcut_start_convert(self):
+        """快捷键：开始转换"""
+        if self._current_pdf:
+            self._on_convert_started(self.convert_page.get_settings())
+        else:
+            self.navigate_to("home")
+
+    def _shortcut_cancel_task(self):
+        """快捷键：取消当前任务"""
+        if self._converter_service:
+            for task in self._converter_service.list_active_tasks():
+                self._on_cancel_task(task["id"])
+                InfoBar.info("已取消", f"任务 #{task['id']} 已取消", parent=self, duration=3000)
+                break
+
     def _init_pages(self):
         """创建所有页面"""
         self.home_page = HomePage()
@@ -95,6 +128,7 @@ class MainWindow(FluentWindow):
         # 首页信号
         self.home_page.file_selected.connect(self._on_file_selected)
         self.home_page.start_convert.connect(self._on_start_convert)
+        self.home_page.navigate_requested.connect(self.navigate_to)
 
         # 转换页信号
         self.convert_page.start_conversion.connect(self._on_convert_started)

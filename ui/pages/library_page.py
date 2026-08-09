@@ -66,10 +66,10 @@ class LibraryPage(QWidget):
         if self.lbl_empty.isVisible():
             self.lbl_empty.setVisible(False)
 
-        card = BookCard(title, author)
-        card.epub_path = epub_path
+        card = BookCard(title, author, epub_path)
         card.clicked.connect(self._on_book_clicked)
         card.delete_requested.connect(self._on_book_delete)
+        card.open_dir_requested.connect(self._on_book_open_dir)
 
         row = len(self._books) // 5
         col = len(self._books) % 5
@@ -129,8 +129,27 @@ class LibraryPage(QWidget):
 
     def _on_book_delete(self, title: str):
         """删除书籍"""
+        from PySide6.QtWidgets import QMessageBox
+        reply = QMessageBox.question(
+            self, "确认删除",
+            f"确定要从书库中删除「{title}」吗？\n（不会删除磁盘上的文件）",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if reply != QMessageBox.Yes:
+            return
+
         for i, card in enumerate(self._books):
             if card.title == title:
+                # 从数据库删除
+                try:
+                    from database.db import Database
+                    db = Database()
+                    db.execute("DELETE FROM books WHERE title = ?", (title,))
+                    db.close()
+                except Exception:
+                    pass
+
                 self.grid_layout.removeWidget(card)
                 card.deleteLater()
                 self._books.pop(i)
@@ -147,6 +166,27 @@ class LibraryPage(QWidget):
             self.lbl_empty.setVisible(True)
 
         self._update_count()
+
+    def _on_book_open_dir(self, title: str):
+        """打开书籍所在目录"""
+        import subprocess, os
+        for card in self._books:
+            if card.title == title:
+                epub_path = getattr(card, "epub_path", "")
+                if epub_path and os.path.exists(os.path.dirname(epub_path)):
+                    subprocess.Popen(f'explorer /select,"{epub_path}"')
+                else:
+                    from qfluentwidgets import InfoBar, InfoBarPosition
+                    InfoBar.warning(
+                        title="路径不存在",
+                        content=f"文件路径不存在: {epub_path}",
+                        orient=Qt.Horizontal,
+                        isClosable=True,
+                        position=InfoBarPosition.TOP,
+                        duration=3000,
+                        parent=self,
+                    )
+                break
 
     def clear_books(self):
         """清空书库"""

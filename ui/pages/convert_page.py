@@ -207,6 +207,21 @@ class ConvertPage(QWidget):
         self.progress_bar = ProgressBar()
         progress_layout.addWidget(self.progress_bar)
 
+        # 进度大字 + 预估剩余
+        progress_info_row = QHBoxLayout()
+        progress_info_row.setSpacing(16)
+
+        self.lbl_progress_pct = QLabel("0%")
+        self.lbl_progress_pct.setStyleSheet("font-size: 32px; font-weight: bold; color: #0078d4;")
+        progress_info_row.addWidget(self.lbl_progress_pct)
+
+        self.lbl_eta = QLabel("")
+        self.lbl_eta.setStyleSheet("color: #888; font-size: 13px;")
+        progress_info_row.addWidget(self.lbl_eta)
+
+        progress_info_row.addStretch()
+        progress_layout.addLayout(progress_info_row)
+
         self.lbl_progress_text = BodyLabel("就绪")
         self.lbl_progress_text.setStyleSheet("color: #888; font-size: 13px;")
         progress_layout.addWidget(self.lbl_progress_text)
@@ -310,7 +325,25 @@ class ConvertPage(QWidget):
     def update_progress(self, value: int):
         """更新进度条"""
         self.progress_bar.setValue(value)
+        self.lbl_progress_pct.setText(f"{value}%")
         self.lbl_progress_text.setText(f"{value}%")
+
+        # 预估剩余时间
+        if value > 0 and not hasattr(self, '_progress_start'):
+            from time import time
+            self._progress_start = time()
+        if value > 3 and hasattr(self, '_progress_start'):
+            from time import time
+            elapsed = time() - self._progress_start
+            eta = elapsed / value * (100 - value)
+            if eta < 60:
+                self.lbl_eta.setText(f"预计剩余 {int(eta)} 秒")
+            else:
+                self.lbl_eta.setText(f"预计剩余 {int(eta / 60)} 分 {int(eta % 60)} 秒")
+        elif value == 0:
+            self.lbl_eta.setText("")
+            if hasattr(self, '_progress_start'):
+                del self._progress_start
 
     def append_log(self, msg: str):
         """追加日志"""
@@ -321,5 +354,9 @@ class ConvertPage(QWidget):
     def reset(self):
         """重置状态"""
         self.progress_bar.setValue(0)
+        self.lbl_progress_pct.setText("0%")
+        self.lbl_eta.setText("")
         self.lbl_progress_text.setText("就绪")
         self.log_text.clear()
+        if hasattr(self, '_progress_start'):
+            del self._progress_start
