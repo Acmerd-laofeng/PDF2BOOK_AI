@@ -192,6 +192,18 @@ class ConvertPage(QWidget):
         progress_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #fff;")
         progress_layout.addWidget(progress_title)
 
+        # 完成后自动打开目录开关
+        auto_open_row = QHBoxLayout()
+        auto_open_col = QVBoxLayout()
+        auto_open_col.setSpacing(4)
+        auto_open_col.addWidget(BodyLabel("转换完成后自动打开目录"))
+        self.auto_open_switch = SwitchButton()
+        self.auto_open_switch.setChecked(False)
+        auto_open_col.addWidget(self.auto_open_switch)
+        auto_open_row.addLayout(auto_open_col)
+        auto_open_row.addStretch()
+        progress_layout.addLayout(auto_open_row)
+
         self.progress_bar = ProgressBar()
         progress_layout.addWidget(self.progress_bar)
 
@@ -292,6 +304,7 @@ class ConvertPage(QWidget):
             "merge_cross_page": self.cross_page_switch.isChecked(),
             "epub_theme": self._selected_theme,
             "output_dir": self.output_path_edit.text().strip(),
+            "auto_open_dir": self.auto_open_switch.isChecked(),
         }
 
     def update_progress(self, value: int):

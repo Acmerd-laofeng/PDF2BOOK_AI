@@ -2,7 +2,7 @@
 """应用常量定义"""
 
 APP_NAME = "PDF2BOOK AI"
-APP_VERSION = "4.0.9"
+APP_VERSION = "4.1.0"
 APP_DESCRIPTION = "AI智能电子书重构平台"
 
 # 自动更新配置

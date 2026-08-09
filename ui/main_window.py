@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """主窗口 - FluentWindow + 左侧导航 + 事件连接"""
 import os
+import json
 from qfluentwidgets import (
     FluentWindow,
     NavigationItemPosition,
@@ -10,7 +11,7 @@ from qfluentwidgets import (
     MessageBox,
 )
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QCloseEvent
 
 from ui.pages.home_page import HomePage
 from ui.pages.convert_page import ConvertPage
@@ -49,6 +50,9 @@ class MainWindow(FluentWindow):
         # 启动后延迟 2 秒检查更新（不阻塞启动）
         if UPDATE_ENABLED:
             QTimer.singleShot(2000, self._check_update)
+
+        # 恢复窗口位置
+        self._restore_geometry()
 
     def _init_pages(self):
         """创建所有页面"""
@@ -134,8 +138,28 @@ class MainWindow(FluentWindow):
                     dialog.exec()
                     break
 
+            # 自动打开目录
+            settings = self.convert_page.get_settings()
+            if settings.get("auto_open_dir") and self._current_pdf:
+                import subprocess, os
+                output_dir = settings.get("output_dir", "")
+                if output_dir and os.path.isdir(output_dir):
+                    subprocess.Popen(["explorer", output_dir])
+                else:
+                    pdf_dir = os.path.dirname(self._current_pdf)
+                    if pdf_dir:
+                        subprocess.Popen(["explorer", pdf_dir])
+
         # 刷新书库（两种转换都要刷新）
         self._refresh_library()
+
+        # 给任务卡片设置输出路径
+        for task_id, report in self._task_reports.items():
+            if report.get("filename") == filename:
+                output_path = report.get("output_path", "")
+                if output_path:
+                    self.task_page.set_task_output(task_id, output_path)
+                break
 
     def _on_error(self, filename: str, error_msg: str):
         """转换错误"""
@@ -306,3 +330,35 @@ class MainWindow(FluentWindow):
         from ui.dialogs.update_dialog import UpdateDialog
         dialog = UpdateDialog(info, self)
         dialog.exec()
+
+    # --- 窗口位置记忆 ---
+
+    _GEOMETRY_FILE = os.path.join(os.path.dirname(__file__), "..", "window_geometry.json")
+
+    def _restore_geometry(self):
+        """从文件恢复窗口位置和大小"""
+        try:
+            path = os.path.normpath(self._GEOMETRY_FILE)
+            if os.path.exists(path):
+                with open(path, "r") as f:
+                    data = json.load(f)
+                self.resize(data.get("width", WINDOW_WIDTH), data.get("height", WINDOW_HEIGHT))
+                if data.get("x") is not None and data.get("y") is not None:
+                    self.move(data["x"], data["y"])
+        except Exception:
+            pass
+
+    def _save_geometry(self):
+        """保存窗口位置和大小"""
+        try:
+            path = os.path.normpath(self._GEOMETRY_FILE)
+            geo = self.geometry()
+            with open(path, "w") as f:
+                json.dump({"x": geo.x(), "y": geo.y(), "width": geo.width(), "height": geo.height()}, f)
+        except Exception:
+            pass
+
+    def closeEvent(self, event):
+        """关闭时保存窗口位置"""
+        self._save_geometry()
+        super().closeEvent(event)

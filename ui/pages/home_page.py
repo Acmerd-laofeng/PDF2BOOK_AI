@@ -77,8 +77,8 @@ class HomePage(QWidget):
         self.recent_layout.setContentsMargins(0, 0, 0, 0)
 
         # 空状态提示
-        self.lbl_empty = BodyLabel("暂无转换记录，拖入 PDF 开始使用")
-        self.lbl_empty.setStyleSheet("color: #666; padding: 20px;")
+        self.lbl_empty = BodyLabel("暂无转换记录\n\n💡 拖入 PDF 到上方区域即可开始")
+        self.lbl_empty.setStyleSheet("color: #666; padding: 20px; font-size: 14px;")
         self.lbl_empty.setAlignment(Qt.AlignCenter)
         self.recent_layout.addWidget(self.lbl_empty)
 

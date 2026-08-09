@@ -142,6 +142,17 @@ class FormatConvertPage(QWidget):
         btn_row = QHBoxLayout()
         btn_row.addStretch()
 
+        # 完成后自动打开目录开关
+        auto_col = QVBoxLayout()
+        auto_col.setSpacing(4)
+        from qfluentwidgets import SwitchButton
+        auto_col.addWidget(BodyLabel("完成后自动打开目录"))
+        self.auto_open_switch = SwitchButton()
+        self.auto_open_switch.setChecked(False)
+        auto_col.addWidget(self.auto_open_switch)
+        btn_row.addLayout(auto_col)
+        btn_row.addSpacing(24)
+
         self.btn_convert = PushButton("开始转换")
         self.btn_convert.setIcon(FIF.ACCEPT)
         self.btn_convert.setEnabled(False)
@@ -350,6 +361,15 @@ class FormatConvertPage(QWidget):
             self._reset_buttons()
             self.btn_open_dir.setVisible(bool(self._last_output))
 
+            # 自动打开目录
+            if self.auto_open_switch.isChecked() and self._last_output:
+                import subprocess, os
+                if os.path.exists(self._last_output):
+                    if os.name == "nt":
+                        subprocess.Popen(["explorer", "/select,", self._last_output])
+                    else:
+                        subprocess.Popen(["xdg-open", os.path.dirname(self._last_output)])
+
             InfoBar.success(
                 "转换完成",
                 f"{filename} 已成功转换",
@@ -395,13 +415,19 @@ class FormatConvertPage(QWidget):
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
-            self.setStyleSheet("FormatConvertPage { background: #1a3a1a; }")
+            self.setStyleSheet("FormatConvertPage { background: rgba(0, 120, 212, 0.08); border: 2px dashed #0078d4; border-radius: 12px; }")
+            self.lbl_drop.setText("📁 松开以加载文件")
+            self.lbl_drop.setStyleSheet("color: #0078d4; font-size: 16px; font-weight: bold;")
 
     def dragLeaveEvent(self, event):
         self.setStyleSheet("")
+        self.lbl_drop.setText("💡 支持拖放文件到此处")
+        self.lbl_drop.setStyleSheet("color: #666;")
 
     def dropEvent(self, event):
         self.setStyleSheet("")
+        self.lbl_drop.setText("💡 支持拖放文件到此处")
+        self.lbl_drop.setStyleSheet("color: #666;")
         urls = event.mimeData().urls()
         if urls:
             path = urls[0].toLocalFile()

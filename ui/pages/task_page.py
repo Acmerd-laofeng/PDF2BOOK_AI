@@ -66,6 +66,7 @@ class TaskPage(QWidget):
         card = TaskCard(task_id, filename)
         card.cancel_clicked.connect(lambda tid: self.cancel_task.emit(tid))
         card.delete_clicked.connect(lambda tid: self._remove_task(tid))
+        card.open_dir_clicked.connect(self._on_open_task_dir)
         self.task_layout.insertWidget(self.task_layout.count() - 1, card)
         self._task_cards[task_id] = card
 
@@ -110,3 +111,21 @@ class TaskPage(QWidget):
 
     def get_task_count(self) -> int:
         return len(self._task_cards)
+
+    def set_task_output(self, task_id: int, output_path: str):
+        """设置任务输出路径"""
+        card = self._task_cards.get(task_id)
+        if card:
+            card.set_output_path(output_path)
+
+    def _on_open_task_dir(self, task_id: int):
+        """打开任务输出目录"""
+        import os, subprocess
+        card = self._task_cards.get(task_id)
+        if card and card._output_path:
+            path = card._output_path
+            if os.path.exists(path):
+                if os.name == "nt":
+                    subprocess.Popen(["explorer", "/select,", path])
+                else:
+                    subprocess.Popen(["xdg-open", os.path.dirname(path)])

@@ -231,6 +231,43 @@ class SettingPage(QWidget):
 
         layout.addWidget(ai_card)
 
+        # === 关于 ===
+        about_card = CardWidget()
+        about_layout = QVBoxLayout(about_card)
+        about_layout.setContentsMargins(20, 16, 20, 16)
+        about_layout.setSpacing(12)
+
+        about_title = BodyLabel("关于")
+        about_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #fff;")
+        about_layout.addWidget(about_title)
+
+        from app.constants import APP_NAME, APP_VERSION
+        about_info = BodyLabel(f"{APP_NAME}  v{APP_VERSION}")
+        about_info.setStyleSheet("font-size: 15px; color: #60cdff; font-weight: bold;")
+        about_layout.addWidget(about_info)
+
+        about_desc = BodyLabel("AI 智能电子书重构平台 · PDF→EPUB 转换")
+        about_desc.setStyleSheet("color: #888; font-size: 13px;")
+        about_layout.addWidget(about_desc)
+
+        about_btn_row = QHBoxLayout()
+        about_btn_row.setSpacing(12)
+
+        self.btn_check_update = PushButton("检查更新")
+        self.btn_check_update.setIcon(FIF.SYNC)
+        self.btn_check_update.clicked.connect(self._check_update)
+        about_btn_row.addWidget(self.btn_check_update)
+
+        self.btn_open_github = PushButton("项目主页")
+        self.btn_open_github.setIcon(FIF.LINK)
+        self.btn_open_github.clicked.connect(self._open_github)
+        about_btn_row.addWidget(self.btn_open_github)
+
+        about_btn_row.addStretch()
+        about_layout.addLayout(about_btn_row)
+
+        layout.addWidget(about_card)
+
         # === 保存按钮 ===
         btn_row = QHBoxLayout()
         btn_row.addStretch()
@@ -339,3 +376,40 @@ class SettingPage(QWidget):
         Config.set_ai_correct_enabled(self.ocr_correction.isChecked())
 
         self.settings_changed.emit(settings)
+
+    def _check_update(self):
+        """手动检查更新"""
+        from qfluentwidgets import InfoBar
+        from PySide6.QtCore import QThread, Signal as QSignal
+
+        class CheckThread(QThread):
+            result = QSignal(object)
+
+            def run(self):
+                from core.updater import check_update
+                info = check_update(timeout=10)
+                self.result.emit(info)
+
+        InfoBar.info("正在检查更新...", "", parent=self, duration=3000)
+        self._update_thread = CheckThread()
+        self._update_thread.result.connect(self._on_update_checked)
+        self._update_thread.start()
+
+    def _on_update_checked(self, info):
+        from qfluentwidgets import InfoBar
+        if info is None:
+            InfoBar.warning("检查失败", "网络请求失败，请稍后重试", parent=self, duration=5000)
+            return
+        if not info.has_update:
+            from app.constants import APP_VERSION
+            InfoBar.success("已是最新版本", f"当前版本 v{APP_VERSION}", parent=self, duration=4000)
+            return
+        from ui.dialogs.update_dialog import UpdateDialog
+        dialog = UpdateDialog(info, self)
+        dialog.exec()
+
+    def _open_github(self):
+        """打开项目主页"""
+        from PySide6.QtGui import QDesktopServices
+        from PySide6.QtCore import QUrl
+        QDesktopServices.openUrl(QUrl("https://github.com/Acmerd-laofeng/PDF2BOOK_AI"))
