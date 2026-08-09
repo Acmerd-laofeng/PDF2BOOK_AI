@@ -72,12 +72,76 @@ a = Analysis(
         'Pythonwin', 'win32ui', 'win32uiole',
         # PIL AVIF 插件 7.5MB，PDF 不用
         'PIL._avif',
+        # llvmlite 102MB — numba JIT 编译，rapidocr/onnxruntime 不需要
+        'llvmlite', 'numba',
+        # PySide6 视频编解码 15.8MB，PDF 工具不需要
+        'PySide6.QtMultimedia', 'PySide6.Qt3DCore', 'PySide6.Qt3DRender',
+        'PySide6.Qt3DInput', 'PySide6.Qt3DAnimation', 'PySide6.Qt3DExtras',
+        'PySide6.Qt3DLogic',
+        # PySide6 软渲染 19.7MB，有 GPU 时不需要
+        # 'PySide6.QtOpenGL',
+        # 加密库 8.7MB，PDF 工具不需要
+        'cryptography',
+        # 数据验证 5MB，间接依赖可选
+        'pydantic',
+        # 几何计算 2.4MB，不需要
+        'Shapely', 'shapely',
+        # 其他不需要的
+        'IPython', 'jupyter', 'notebook', 'jupyter_client',
+        'pytest', 'setuptools', 'pip', 'wheel',
+        'mkl', 'mkl_fft',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
     noarchive=False,
 )
+
+# --- 过滤不需要的二进制文件 ---
+# PySide6 全局 hook 会收集所有 Qt DLL，手动排除不需要的
+_strip_patterns = [
+    'opengl32sw', 'opengl32',  # 软渲染 19.7MB
+    'avformat-', 'avcodec-', 'avdevice-',  # 视频编解码
+    'avutil-', 'swscale-', 'swresample-', 'avfilter-',
+    'Qt63D', 'Qt6Quick', 'Qt6Quick3D', 'Qt6Qml',  # 3D/QML
+    'Qt6WebEngine', 'Qt6WebChannel', 'Qt6WebSockets',
+    'Qt6Multimedia', 'Qt6SpatialAudio',
+    'Qt6Bluetooth', 'Qt6Nfc', 'Qt6SerialBus', 'Qt6SerialPort',
+    'Qt6Sensors', 'Qt6Positioning', 'Qt6Location',
+    'Qt6Sql', 'Qt6Test', 'Qt6Designer', 'Qt6Help',
+    'Qt6Charts', 'Qt6DataVisualization', 'Qt6Graphs',
+    'Qt6Pdf',  # PySide6 PDF 模块（我们有 pymupdf）
+    'Qt6Scxml', 'Qt6RemoteObjects', 'Qt6NetworkAuth',
+    # llvmlite
+    'llvmlite',
+    # debug/debugger
+    'debug',
+]
+
+_filtered_binaries = []
+for dest, src, kind in a.binaries:
+    skip = False
+    dest_lower = dest.lower()
+    for pat in _strip_patterns:
+        if pat.lower() in dest_lower:
+            skip = True
+            break
+    if not skip:
+        _filtered_binaries.append((dest, src, kind))
+a.binaries = _filtered_binaries
+
+# 过滤 datas 中的不需要的文件
+_filtered_datas = []
+for dest, src, kind in a.datas:
+    dest_lower = dest.lower()
+    skip = False
+    for pat in ['debug', 'qmltooling', 'qt6quick', 'qt6qml', 'qt63d', 'qt6webengine', 'translations/qt']:
+        if pat in dest_lower:
+            skip = True
+            break
+    if not skip:
+        _filtered_datas.append((dest, src, kind))
+a.datas = _filtered_datas
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
