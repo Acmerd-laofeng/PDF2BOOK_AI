@@ -12,6 +12,7 @@ from qfluentwidgets import (
 from ui.widgets.pdf_drop_area import PDFDropArea
 from ui.widgets.analysis_card import AnalysisCard
 from ui.widgets.progress_card import ProgressCard
+from PySide6.QtWidgets import QFileDialog
 
 
 class HomePage(QWidget):
@@ -42,6 +43,7 @@ class HomePage(QWidget):
         # 拖拽区域
         self.drop_area = PDFDropArea()
         self.drop_area.file_dropped.connect(self._on_file_dropped)
+        self.drop_area.files_dropped.connect(self._on_files_dropped)
         layout.addWidget(self.drop_area)
 
         # 快捷功能入口
@@ -129,9 +131,24 @@ class HomePage(QWidget):
         layout.addItem(QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
     def _on_file_dropped(self, file_path: str):
-        """拖入文件回调"""
+        """拖入单文件回调"""
         self.file_selected.emit(file_path)
         self.btn_convert.setEnabled(True)
+
+    def _on_files_dropped(self, file_paths: list):
+        """拖入多文件回调 — 批量添加到最近任务"""
+        if not file_paths:
+            return
+        # 第一个文件作为当前选中文件
+        self.file_selected.emit(file_paths[0])
+        self.btn_convert.setEnabled(True)
+        # 多文件提示
+        from qfluentwidgets import InfoBar, InfoBarPosition
+        InfoBar.success(
+            "批量选择",
+            f"已选择 {len(file_paths)} 个文件，第一个已加载到转换区",
+            parent=self, duration=4000
+        )
 
     def show_analysis(self, info: dict):
         """显示 PDF 分析结果"""

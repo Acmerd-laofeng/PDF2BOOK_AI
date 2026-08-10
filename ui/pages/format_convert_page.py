@@ -175,6 +175,21 @@ class FormatConvertPage(QWidget):
         self.progress_bar = ProgressBar()
         progress_layout.addWidget(self.progress_bar)
 
+        # 大字百分比 + 预估时间
+        progress_info_row = QHBoxLayout()
+        progress_info_row.setSpacing(16)
+
+        from PySide6.QtWidgets import QLabel
+        self.lbl_progress_pct = QLabel("0%")
+        self.lbl_progress_pct.setStyleSheet("font-size: 32px; font-weight: bold; color: #0078d4;")
+        progress_info_row.addWidget(self.lbl_progress_pct)
+
+        self.lbl_eta = QLabel("")
+        self.lbl_eta.setStyleSheet("color: #888; font-size: 13px;")
+        progress_info_row.addWidget(self.lbl_eta)
+        progress_info_row.addStretch()
+        progress_layout.addLayout(progress_info_row)
+
         self.lbl_progress_status = BodyLabel("等待开始...")
         self.lbl_progress_status.setStyleSheet("color: #888; font-size: 13px;")
         progress_layout.addWidget(self.lbl_progress_status)
@@ -343,7 +358,25 @@ class FormatConvertPage(QWidget):
             expected = os.path.basename(self._current_file)
             if filename == expected and self._service.get_task_info(self._current_task_id).get("status") == "converting":
                 self.progress_bar.setValue(percent)
+                self.lbl_progress_pct.setText(f"{percent}%")
                 self.lbl_progress_status.setText(f"转换中... {percent}%")
+
+                # 预估剩余时间
+                if percent > 3 and not hasattr(self, '_progress_start'):
+                    from time import time
+                    self._progress_start = time()
+                if percent > 3 and hasattr(self, '_progress_start'):
+                    from time import time
+                    elapsed = time() - self._progress_start
+                    eta = elapsed / percent * (100 - percent)
+                    if eta < 60:
+                        self.lbl_eta.setText(f"预计剩余 {int(eta)} 秒")
+                    else:
+                        self.lbl_eta.setText(f"预计剩余 {int(eta / 60)} 分 {int(eta % 60)} 秒")
+                elif percent == 0:
+                    self.lbl_eta.setText("")
+                    if hasattr(self, '_progress_start'):
+                        del self._progress_start
 
     def _on_finished(self, filename: str):
         # 只响应当前格式转换任务
@@ -355,6 +388,8 @@ class FormatConvertPage(QWidget):
             if info.get("status") != "completed":
                 return
             self.progress_bar.setValue(100)
+            self.lbl_progress_pct.setText("100%")
+            self.lbl_eta.setText("")
             self.lbl_progress_status.setText("✅ 转换完成！")
 
             self._last_output = info.get("output_path", "")

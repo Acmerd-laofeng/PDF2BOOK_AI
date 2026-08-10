@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from qfluentwidgets import (
     TitleLabel, BodyLabel, PushButton, FluentIcon as FIF,
-    InfoBar, InfoBarPosition,
+    InfoBar, InfoBarPosition, SearchLineEdit,
 )
 
 from ui.widgets.book_card import BookCard
@@ -18,6 +18,7 @@ class LibraryPage(QWidget):
     def __init__(self):
         super().__init__()
         self._books = []
+        self._all_books_data = []  # 数据库原始数据缓存（用于搜索过滤）
         self._init_ui()
 
     def _init_ui(self):
@@ -29,6 +30,13 @@ class LibraryPage(QWidget):
         header = QHBoxLayout()
         header.addWidget(TitleLabel("我的书库"))
         header.addStretch()
+
+        # 搜索框
+        self.search_box = SearchLineEdit()
+        self.search_box.setPlaceholderText("搜索书名...")
+        self.search_box.setFixedWidth(220)
+        self.search_box.textChanged.connect(self._on_search)
+        header.addWidget(self.search_box)
 
         self.btn_refresh = PushButton("刷新")
         self.btn_refresh.setIcon(FIF.SYNC)
@@ -91,6 +99,8 @@ class LibraryPage(QWidget):
             )
             db.close()
 
+            self._all_books_data = rows or []
+
             if rows:
                 for row in rows:
                     title, author, epub_path = row[0], row[1], row[2] or ""
@@ -100,6 +110,30 @@ class LibraryPage(QWidget):
         except Exception as e:
             self.lbl_empty.setText(f"加载失败: {e}")
             self.lbl_empty.setVisible(True)
+
+    def _on_search(self, text: str):
+        """搜索过滤"""
+        text = text.strip().lower()
+        self.clear_books()
+
+        if not text:
+            # 无搜索词：显示全部
+            for row in self._all_books_data:
+                title, author, epub_path = row[0], row[1], row[2] or ""
+                self.add_book(title, author or "未知", epub_path)
+        else:
+            # 过滤匹配
+            matched = [
+                row for row in self._all_books_data
+                if text in (row[0] or "").lower() or text in (row[1] or "").lower()
+            ]
+            if matched:
+                for row in matched:
+                    title, author, epub_path = row[0], row[1], row[2] or ""
+                    self.add_book(title, author or "未知", epub_path)
+            else:
+                self.lbl_empty.setText("🔍 未找到匹配书籍")
+                self.lbl_empty.setVisible(True)
 
     def _on_book_clicked(self, title: str):
         """点击书籍 → 预览"""

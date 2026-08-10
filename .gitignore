@@ -40,3 +40,4 @@ installer_output/*.exe
 tests/sample.pdf
 
 build_log.txt
+_verify.py

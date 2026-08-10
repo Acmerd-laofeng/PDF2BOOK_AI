@@ -9,11 +9,12 @@ from PySide6.QtGui import QDragEnterEvent, QDropEvent
 class PDFDropArea(QLabel):
     """文件拖拽上传区域
 
-    支持拖拽和点击选择文件。
+    支持拖拽和点击选择文件，支持多文件批量选择。
     支持 PDF / EPUB / TXT / MOBI 格式。
     """
 
-    file_dropped = Signal(str)
+    file_dropped = Signal(str)       # 单文件（兼容旧接口）
+    files_dropped = Signal(list)     # 多文件（批量）
 
     SUPPORTED_EXTS = {'.pdf', '.epub', '.txt', '.mobi'}
 
@@ -63,9 +64,15 @@ class PDFDropArea(QLabel):
 
     def dropEvent(self, event: QDropEvent):
         self._apply_style(False)
+        paths = []
         for url in event.mimeData().urls():
             path = url.toLocalFile()
             if self._is_supported(path):
+                paths.append(path)
+        if paths:
+            if len(paths) == 1:
+                # 单文件：兼容旧接口
+                path = paths[0]
                 filename = os.path.basename(path)
                 size = os.path.getsize(path)
                 if size < 1024 * 1024:
@@ -74,22 +81,39 @@ class PDFDropArea(QLabel):
                     size_str = f"{size / 1024 / 1024:.1f} MB"
                 self.setText(f"📄 {filename}\n{size_str}")
                 self.file_dropped.emit(path)
-                return
+            else:
+                # 多文件：批量模式
+                summary = "、".join(os.path.basename(p) for p in paths[:3])
+                if len(paths) > 3:
+                    summary += f" 等 {len(paths)} 个文件"
+                self.setText(f"📚 已选择 {len(paths)} 个文件\n{summary}")
+                self.files_dropped.emit(paths)
 
     def mousePressEvent(self, event):
-        """点击选择文件"""
+        """点击选择文件（支持多选）"""
         exts = " ".join(f"*{ext}" for ext in sorted(self.SUPPORTED_EXTS))
         filter_str = f"支持的文件 ({exts});;所有文件 (*.*)"
-        path, _ = QFileDialog.getOpenFileName(self, "选择文件", "", filter_str)
-        if path and self._is_supported(path):
-            filename = os.path.basename(path)
-            size = os.path.getsize(path)
-            if size < 1024 * 1024:
-                size_str = f"{size / 1024:.0f} KB"
+        paths, _ = QFileDialog.getOpenFileNames(self, "选择文件（可多选）", "", filter_str)
+        if paths:
+            valid = [p for p in paths if self._is_supported(p)]
+            if not valid:
+                return
+            if len(valid) == 1:
+                path = valid[0]
+                filename = os.path.basename(path)
+                size = os.path.getsize(path)
+                if size < 1024 * 1024:
+                    size_str = f"{size / 1024:.0f} KB"
+                else:
+                    size_str = f"{size / 1024 / 1024:.1f} MB"
+                self.setText(f"📄 {filename}\n{size_str}")
+                self.file_dropped.emit(path)
             else:
-                size_str = f"{size / 1024 / 1024:.1f} MB"
-            self.setText(f"📄 {filename}\n{size_str}")
-            self.file_dropped.emit(path)
+                summary = "、".join(os.path.basename(p) for p in valid[:3])
+                if len(valid) > 3:
+                    summary += f" 等 {len(valid)} 个文件"
+                self.setText(f"📚 已选择 {len(valid)} 个文件\n{summary}")
+                self.files_dropped.emit(valid)
 
     def reset(self):
         """重置为默认状态"""

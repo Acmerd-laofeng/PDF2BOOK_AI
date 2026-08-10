@@ -181,6 +181,12 @@ class SettingPage(QWidget):
         for key, name in GEMINI_MODELS.items():
             self.ai_model.addItem(name)
         col_model.addWidget(self.ai_model)
+
+        # 模型说明
+        self.lbl_model_desc = BodyLabel("")
+        self.lbl_model_desc.setStyleSheet("color: #888; font-size: 12px;")
+        col_model.addWidget(self.lbl_model_desc)
+        self.ai_model.currentIndexChanged.connect(self._update_model_desc)
         ai_row1.addLayout(col_model)
 
         ai_layout.addLayout(ai_row1)
@@ -393,6 +399,20 @@ class SettingPage(QWidget):
             self.api_key.setText(key)
 
         self.ocr_correction.setChecked(Config.get_ai_correct_enabled())
+
+    def _update_model_desc(self):
+        """更新模型说明"""
+        descs = {
+            "gemini-3.5-flash": "推荐 · 速度快、免费层额度高、支持图文",
+            "gemini-2.5-flash": "均衡 · 推理能力强、速度适中",
+            "gemini-2.0-flash": "旧版 · 可能受限",
+            "gemini-2.0-flash-lite": "轻量 · 速度最快但质量略低",
+        }
+        from app.constants import GEMINI_MODELS
+        model_keys = list(GEMINI_MODELS.keys())
+        idx = self.ai_model.currentIndex()
+        key = model_keys[idx] if idx < len(model_keys) else ""
+        self.lbl_model_desc.setText(descs.get(key, ""))
 
     def _test_ai_connection(self):
         """测试 Gemini API 连接"""

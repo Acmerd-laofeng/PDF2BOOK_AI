@@ -22,7 +22,7 @@ from ui.pages.setting_page import SettingPage
 from ui.dialogs.report_dialog import ReportDialog
 from core.event_bus import event_bus
 from core.models import Task, ConvertSettings
-from app.constants import APP_NAME, WINDOW_WIDTH, WINDOW_HEIGHT, UPDATE_ENABLED
+from app.constants import APP_NAME, APP_VERSION, WINDOW_WIDTH, WINDOW_HEIGHT, UPDATE_ENABLED
 
 
 class MainWindow(FluentWindow):
@@ -30,7 +30,7 @@ class MainWindow(FluentWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(APP_NAME)
+        self.setWindowTitle(f"{APP_NAME} v{APP_VERSION}")
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
         self.setMinimumSize(900, 600)
 
@@ -135,6 +135,7 @@ class MainWindow(FluentWindow):
 
         # 任务页信号
         self.task_page.cancel_task.connect(self._on_cancel_task)
+        self.task_page.navigate_requested.connect(self.navigate_to)
 
         # 设置页信号
         self.setting_page.settings_changed.connect(self._on_settings_changed)

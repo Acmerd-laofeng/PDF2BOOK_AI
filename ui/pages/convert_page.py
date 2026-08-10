@@ -346,10 +346,28 @@ class ConvertPage(QWidget):
                 del self._progress_start
 
     def append_log(self, msg: str):
-        """追加日志"""
+        """追加日志（支持颜色分级）"""
         from datetime import datetime
         timestamp = datetime.now().strftime("%H:%M:%S")
-        self.log_text.append(f"[{timestamp}] {msg}")
+
+        # 根据内容着色
+        if any(kw in msg for kw in ["错误", "失败", "异常", "Error", "error"]):
+            color = "#f5576c"
+        elif any(kw in msg for kw in ["完成", "成功", "Done", "success"]):
+            color = "#43e97b"
+        elif any(kw in msg for kw in ["警告", "Warning", "warn"]):
+            color = "#fa709a"
+        elif "开始" in msg or "启动" in msg:
+            color = "#60cdff"
+        else:
+            color = "#ccc"
+
+        self.log_text.append(f'<span style="color: #888;">[{timestamp}]</span> <span style="color: {color};">{msg}</span>')
+
+        # 自动滚动到底部
+        cursor = self.log_text.textCursor()
+        cursor.movePosition(cursor.End)
+        self.log_text.setTextCursor(cursor)
 
     def reset(self):
         """重置状态"""

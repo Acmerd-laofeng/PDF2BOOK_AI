@@ -15,6 +15,7 @@ class TaskPage(QWidget):
     """任务中心"""
 
     cancel_task = Signal(int)  # task_id
+    navigate_requested = Signal(str)  # 页面名
 
     def __init__(self):
         super().__init__()
@@ -49,10 +50,24 @@ class TaskPage(QWidget):
         self.task_layout.setContentsMargins(0, 0, 0, 0)
 
         # 空状态
+        empty_widget = QWidget()
+        empty_layout = QVBoxLayout(empty_widget)
+        empty_layout.setAlignment(Qt.AlignCenter)
+        empty_layout.setSpacing(16)
+
         self.lbl_empty = BodyLabel("📋 暂无转换任务")
-        self.lbl_empty.setStyleSheet("color: #666; font-size: 16px; padding: 40px;")
+        self.lbl_empty.setStyleSheet("color: #666; font-size: 16px;")
         self.lbl_empty.setAlignment(Qt.AlignCenter)
-        self.task_layout.addWidget(self.lbl_empty)
+        empty_layout.addWidget(self.lbl_empty)
+
+        btn_go_convert = PushButton("去转换")
+        btn_go_convert.setIcon(FIF.DOCUMENT)
+        btn_go_convert.setFixedWidth(120)
+        btn_go_convert.clicked.connect(lambda: self._navigate_to("convert"))
+        empty_layout.addWidget(btn_go_convert, alignment=Qt.AlignCenter)
+
+        self._empty_widget = empty_widget
+        self.task_layout.addWidget(empty_widget)
 
         self.task_layout.addStretch()
         scroll.setWidget(self.task_container)
@@ -60,8 +75,8 @@ class TaskPage(QWidget):
 
     def add_task(self, task_id: int, filename: str):
         """添加任务卡片"""
-        if self.lbl_empty.isVisible():
-            self.lbl_empty.setVisible(False)
+        if self._empty_widget.isVisible():
+            self._empty_widget.setVisible(False)
 
         card = TaskCard(task_id, filename)
         card.cancel_clicked.connect(lambda tid: self.cancel_task.emit(tid))
@@ -97,7 +112,7 @@ class TaskPage(QWidget):
             card.deleteLater()
 
         if not self._task_cards:
-            self.lbl_empty.setVisible(True)
+            self._empty_widget.setVisible(True)
             self.btn_clear.setEnabled(False)
 
     def _on_clear_completed(self):
@@ -129,3 +144,7 @@ class TaskPage(QWidget):
                     subprocess.Popen(["explorer", "/select,", path])
                 else:
                     subprocess.Popen(["xdg-open", os.path.dirname(path)])
+
+    def _navigate_to(self, page: str):
+        """触发导航信号"""
+        self.navigate_requested.emit(page)
