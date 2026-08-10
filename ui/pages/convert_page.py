@@ -60,19 +60,58 @@ class ConvertPage(QWidget):
         mode_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #fff;")
         mode_layout.addWidget(mode_title)
 
+        # 转换模式可视化卡片
+        mode_cards_row = QHBoxLayout()
+        mode_cards_row.setSpacing(8)
+
+        self._mode_cards = []
+        mode_descs = [
+            ("quick", "⚡", "快速", "150 DPI\n纯文字 PDF"),
+            ("standard", "✅", "推荐", "300 DPI\n大多数扫描版"),
+            ("precise", "🎯", "极致", "400 DPI\n小字/古籍"),
+            ("ai", "🤖", "AI增强", "300 DPI + AI\n需联网"),
+        ]
+        for key, emoji, name, desc in mode_descs:
+            card = CardWidget()
+            card.setFixedHeight(80)
+            card.setCursor(Qt.PointingHandCursor)
+            card._mode_key = key
+            card_layout = QVBoxLayout(card)
+            card_layout.setContentsMargins(12, 8, 12, 8)
+            card_layout.setSpacing(2)
+            card_layout.setAlignment(Qt.AlignCenter)
+
+            lbl_emoji = QLabel(emoji)
+            lbl_emoji.setAlignment(Qt.AlignCenter)
+            lbl_emoji.setStyleSheet("font-size: 20px;")
+            card_layout.addWidget(lbl_emoji)
+
+            lbl_name = QLabel(name)
+            lbl_name.setAlignment(Qt.AlignCenter)
+            lbl_name.setStyleSheet("font-size: 13px; font-weight: bold; color: #fff;")
+            card_layout.addWidget(lbl_name)
+
+            lbl_desc = QLabel(desc)
+            lbl_desc.setAlignment(Qt.AlignCenter)
+            lbl_desc.setStyleSheet("font-size: 10px; color: #888;")
+            card_layout.addWidget(lbl_desc)
+
+            card.mousePressEvent = lambda e, k=key: self._select_mode_card(k)
+            self._mode_cards.append(card)
+            mode_cards_row.addWidget(card)
+
+        mode_layout.addLayout(mode_cards_row)
+
+        # 隐藏旧的 combo（保留逻辑兼容）
         self.mode_combo = ComboBox()
-        self._mode_keys = list(CONVERT_MODES.keys())
-        for key, name in CONVERT_MODES.items():
-            self.mode_combo.addItem(name)
-        self.mode_combo.setCurrentIndex(1)  # 默认推荐模式
-        self.mode_combo.currentIndexChanged.connect(self._on_mode_changed)
-        mode_layout.addWidget(self.mode_combo)
+        self.mode_combo.setVisible(False)
 
         # 模式说明
         self.lbl_mode_desc = BodyLabel("")
         self.lbl_mode_desc.setStyleSheet("color: #888; font-size: 13px;")
         mode_layout.addWidget(self.lbl_mode_desc)
-        self._update_mode_desc()
+        self._selected_mode = "standard"
+        self._select_mode_card("standard")
 
         layout.addWidget(mode_card)
 
@@ -251,6 +290,11 @@ class ConvertPage(QWidget):
         self.btn_start.clicked.connect(self._on_start_clicked)
         layout.addWidget(self.btn_start)
 
+        # 状态指示器
+        self.lbl_status = BodyLabel("● 空闲")
+        self.lbl_status.setStyleSheet("color: #888; font-size: 12px;")
+        layout.addWidget(self.lbl_status)
+
         layout.addStretch()
 
         scroll.setWidget(container)
@@ -268,19 +312,51 @@ class ConvertPage(QWidget):
         if dir_path:
             self.output_path_edit.setText(dir_path)
 
-    def _on_mode_changed(self):
-        self._update_mode_desc()
+    def _select_mode_card(self, key: str):
+        """可视化模式卡片选择"""
+        self._selected_mode = key
+        for card in self._mode_cards:
+            is_selected = card._mode_key == key
+            if is_selected:
+                card.setStyleSheet("""
+                    CardWidget {
+                        background: rgba(0, 120, 212, 0.15);
+                        border: 2px solid #0078d4;
+                        border-radius: 8px;
+                    }
+                """)
+            else:
+                card.setStyleSheet("""
+                    CardWidget {
+                        background: rgba(255, 255, 255, 0.05);
+                        border: 2px solid transparent;
+                        border-radius: 8px;
+                    }
+                    CardWidget:hover {
+                        border: 2px solid #3399ff;
+                    }
+                """)
 
-    def _update_mode_desc(self):
+        # 更新说明
         descs = {
-            "quick": "150 DPI · 速度快 · 适合纯文字 PDF",
-            "standard": "300 DPI · 推荐 · 适合大多数扫描版",
-            "precise": "400 DPI · 高精度 · 适合小字/古籍",
-            "ai": "300 DPI + AI 纠错 · 需联网 · 质量最佳",
+            "quick": "⚡ 速度快 · 适合纯文字 PDF",
+            "standard": "✅ 推荐 · 适合大多数扫描版",
+            "precise": "🎯 高精度 · 适合小字/古籍",
+            "ai": "🤖 AI 纠错 · 需联网 · 质量最佳",
         }
-        idx = self.mode_combo.currentIndex()
-        key = self._mode_keys[idx] if idx < len(self._mode_keys) else "standard"
         self.lbl_mode_desc.setText(descs.get(key, ""))
+
+        # 同步 combo 索引（逻辑兼容）
+        keys = list(CONVERT_MODES.keys())
+        if key in keys:
+            self.mode_combo.setCurrentIndex(keys.index(key))
+
+    def _on_mode_changed(self):
+        """combo 变化时同步可视化卡片"""
+        idx = self.mode_combo.currentIndex()
+        keys = list(CONVERT_MODES.keys())
+        if idx < len(keys):
+            self._select_mode_card(keys[idx])
 
     def _on_theme_selected(self, theme_key: str):
         """主题单选：选中一个，取消其他"""
@@ -294,6 +370,8 @@ class ConvertPage(QWidget):
         # 保存导出路径到配置
         from app.config import Config
         Config.set_output_dir(settings['output_dir'])
+        self.lbl_status.setText("● 转换中...")
+        self.lbl_status.setStyleSheet("color: #60cdff; font-size: 12px;")
         self.start_conversion.emit(settings)
 
     def set_pdf_info(self, pdf_path: str):
@@ -309,8 +387,7 @@ class ConvertPage(QWidget):
 
     def get_settings(self) -> dict:
         """获取当前转换设置"""
-        idx = self.mode_combo.currentIndex()
-        quality = self._mode_keys[idx] if idx < len(self._mode_keys) else "standard"
+        quality = getattr(self, '_selected_mode', 'standard')
         return {
             "quality": quality,
             "dpi": self.dpi_spin.value(),
@@ -327,6 +404,13 @@ class ConvertPage(QWidget):
         self.progress_bar.setValue(value)
         self.lbl_progress_pct.setText(f"{value}%")
         self.lbl_progress_text.setText(f"{value}%")
+
+        if value >= 100:
+            self.lbl_status.setText("● 已完成")
+            self.lbl_status.setStyleSheet("color: #43e97b; font-size: 12px;")
+        elif value > 0:
+            self.lbl_status.setText("● 转换中...")
+            self.lbl_status.setStyleSheet("color: #60cdff; font-size: 12px;")
 
         # 预估剩余时间
         if value > 0 and not hasattr(self, '_progress_start'):

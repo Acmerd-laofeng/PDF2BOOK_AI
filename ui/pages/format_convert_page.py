@@ -94,6 +94,12 @@ class FormatConvertPage(QWidget):
         self.lbl_file_info.setVisible(False)
         file_layout.addWidget(self.lbl_file_info)
 
+        # 格式转换路径可视化（源格式 → 目标格式）
+        self.lbl_format_flow = BodyLabel("")
+        self.lbl_format_flow.setStyleSheet("color: #888; font-size: 14px; padding: 4px 0;")
+        self.lbl_format_flow.setVisible(False)
+        file_layout.addWidget(self.lbl_format_flow)
+
         content_layout.addWidget(file_card)
 
         # === 转换设置卡片 ===
@@ -291,6 +297,14 @@ class FormatConvertPage(QWidget):
         )
         self.lbl_file_info.setVisible(True)
 
+        # 格式流可视化
+        if targets:
+            flow = f"  {ext.upper()}  →  {'  /  '.join(t.upper() for t in targets)}"
+            self.lbl_format_flow.setText(flow)
+            self.lbl_format_flow.setVisible(True)
+        else:
+            self.lbl_format_flow.setVisible(False)
+
         self.btn_convert.setEnabled(bool(targets))
         self.btn_open_dir.setVisible(False)
 
@@ -307,6 +321,11 @@ class FormatConvertPage(QWidget):
             else:
                 basename = os.path.splitext(self._current_file)[0]
                 self.input_output.setText(f"{basename}.{target}")
+
+        # 更新格式流可视化
+        if self._current_file and target:
+            ext = os.path.splitext(self._current_file)[1].lower().lstrip(".")
+            self.lbl_format_flow.setText(f"  {ext.upper()}  →  {target.upper()}  ✅")
 
     def _on_convert(self):
         if not self._current_file:

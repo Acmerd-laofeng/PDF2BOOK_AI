@@ -40,6 +40,12 @@ class HomePage(QWidget):
         subtitle.setStyleSheet("color: #888; font-size: 14px;")
         layout.addWidget(subtitle)
 
+        # 版本号
+        from app.constants import APP_VERSION
+        lbl_version = BodyLabel(f"v{APP_VERSION}")
+        lbl_version.setStyleSheet("color: #555; font-size: 12px;")
+        layout.addWidget(lbl_version)
+
         # 拖拽区域
         self.drop_area = PDFDropArea()
         self.drop_area.file_dropped.connect(self._on_file_dropped)
@@ -149,6 +155,11 @@ class HomePage(QWidget):
             f"已选择 {len(file_paths)} 个文件，第一个已加载到转换区",
             parent=self, duration=4000
         )
+        # 将其他文件显示为最近任务
+        for fp in file_paths[1:4]:  # 最多显示3个
+            import os
+            name = os.path.basename(fp)
+            self.add_recent_task(name)
 
     def show_analysis(self, info: dict):
         """显示 PDF 分析结果"""

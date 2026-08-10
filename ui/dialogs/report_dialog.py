@@ -2,6 +2,7 @@
 """转换完成报告弹窗"""
 import os
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout
+from PySide6.QtCore import Signal
 from qfluentwidgets import PushButton, FluentIcon as FIF
 from ui.widgets.report_view import ReportView
 
@@ -11,6 +12,8 @@ class ReportDialog(QDialog):
 
     显示转换统计：页数、段落、章节、字数、OCR准确率、耗时等。
     """
+
+    reconvert_requested = Signal(str)  # 源文件路径
 
     def __init__(self, report_data: dict, parent=None):
         super().__init__(parent)
@@ -38,6 +41,11 @@ class ReportDialog(QDialog):
 
         btn_layout.addStretch()
 
+        btn_reconvert = PushButton("重新转换")
+        btn_reconvert.setIcon(FIF.SYNC)
+        btn_reconvert.clicked.connect(self._on_reconvert)
+        btn_layout.addWidget(btn_reconvert)
+
         btn_open = PushButton("打开输出目录")
         btn_open.setIcon(FIF.FOLDER)
         btn_open.clicked.connect(self._on_open_dir)
@@ -58,3 +66,10 @@ class ReportDialog(QDialog):
             folder = os.path.dirname(output_path)
             if os.path.exists(folder):
                 subprocess.Popen(f'explorer "{folder}"')
+
+    def _on_reconvert(self):
+        """重新转换"""
+        source_path = self.report_data.get("source_path", "")
+        if source_path:
+            self.reconvert_requested.emit(source_path)
+        self.accept()

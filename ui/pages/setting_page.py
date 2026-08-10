@@ -351,6 +351,13 @@ class SettingPage(QWidget):
         btn_row = QHBoxLayout()
         btn_row.addStretch()
 
+        self.btn_reset = PushButton("恢复默认")
+        self.btn_reset.setFixedHeight(40)
+        self.btn_reset.setFixedWidth(120)
+        self.btn_reset.setIcon(FIF.BROOM)
+        self.btn_reset.clicked.connect(self._on_reset_defaults)
+        btn_row.addWidget(self.btn_reset)
+
         self.btn_save = PushButton("保存设置")
         self.btn_save.setFixedHeight(40)
         self.btn_save.setFixedWidth(160)
@@ -584,3 +591,32 @@ class SettingPage(QWidget):
 
         InfoBar.success("清理完成", "缓存已清理", parent=self, duration=3000)
         self._update_cache_info()
+
+    def _on_reset_defaults(self):
+        """恢复默认设置"""
+        from PySide6.QtWidgets import QMessageBox
+        from qfluentwidgets import InfoBar
+
+        reply = QMessageBox.question(
+            self, "恢复默认设置",
+            "将所有设置恢复为默认值，不会影响已转换的文件。\n\n是否继续？",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if reply != QMessageBox.Yes:
+            return
+
+        # 恢复 UI 默认值
+        self.quality.setCurrentIndex(1)  # standard
+        self.dpi.setValue(300)
+        self.parallel.setValue(4)
+        self.indent_threshold.setValue(30)
+        self.gap_ratio.setText("1.8")
+        self.detect_chapters.setChecked(True)
+        self.merge_cross_page.setChecked(True)
+        self.default_theme.setCurrentIndex(0)  # classic
+        self.default_format.setCurrentIndex(0)  # EPUB
+        self.api_provider.setCurrentIndex(0)  # 不启用
+        self.ocr_correction.setChecked(False)
+
+        InfoBar.success("已恢复默认", "请点击保存设置以生效", parent=self, duration=4000)
