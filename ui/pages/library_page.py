@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QGridLayout, QScrollArea, QHBoxLayout
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from qfluentwidgets import (
     TitleLabel, BodyLabel, PushButton, FluentIcon as FIF,
     InfoBar, InfoBarPosition, SearchLineEdit,
@@ -14,6 +14,8 @@ from ui.widgets.book_card import BookCard
 
 class LibraryPage(QWidget):
     """我的书库"""
+
+    navigate_requested = Signal(str)  # 页面名
 
     def __init__(self):
         super().__init__()
@@ -65,6 +67,13 @@ class LibraryPage(QWidget):
         self.lbl_empty.setStyleSheet("color: #666; font-size: 16px; padding: 60px;")
         self.lbl_empty.setAlignment(Qt.AlignCenter)
         self.grid_layout.addWidget(self.lbl_empty, 0, 0)
+
+        # 空状态引导按钮
+        self._empty_btn = PushButton("去转换")
+        self._empty_btn.setIcon(FIF.DOCUMENT)
+        self._empty_btn.setFixedWidth(120)
+        self._empty_btn.clicked.connect(lambda: self._navigate_to_empty())
+        self._empty_btn_visible = True
 
         scroll.setWidget(scroll_content)
         layout.addWidget(scroll)
@@ -221,6 +230,10 @@ class LibraryPage(QWidget):
                         parent=self,
                     )
                 break
+
+    def _navigate_to_empty(self):
+        """空状态引导：跳转转换页"""
+        self.navigate_requested.emit("convert")
 
     def clear_books(self):
         """清空书库"""

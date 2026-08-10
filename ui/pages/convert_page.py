@@ -81,6 +81,20 @@ class ConvertPage(QWidget):
             card_layout.setSpacing(2)
             card_layout.setAlignment(Qt.AlignCenter)
 
+            # 推荐角标
+            if key == "standard":
+                lbl_badge = QLabel("推荐")
+                lbl_badge.setFixedSize(36, 16)
+                lbl_badge.setAlignment(Qt.AlignCenter)
+                lbl_badge.setStyleSheet("""
+                    font-size: 9px;
+                    color: white;
+                    background: #0078d4;
+                    border-radius: 8px;
+                    font-weight: bold;
+                """)
+                card_layout.addWidget(lbl_badge, alignment=Qt.AlignRight | Qt.AlignTop)
+
             lbl_emoji = QLabel(emoji)
             lbl_emoji.setAlignment(Qt.AlignCenter)
             lbl_emoji.setStyleSheet("font-size: 20px;")

@@ -121,6 +121,19 @@ class TaskPage(QWidget):
             tid for tid, card in self._task_cards.items()
             if card._status in ("completed", "error", "cancelled")
         ]
+        if not to_remove:
+            return
+
+        from PySide6.QtWidgets import QMessageBox
+        reply = QMessageBox.question(
+            self, "确认清空",
+            f"将清空 {len(to_remove)} 个已完成的任务记录。\n\n是否继续？",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if reply != QMessageBox.Yes:
+            return
+
         for tid in to_remove:
             self._remove_task(tid)
 

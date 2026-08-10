@@ -40,11 +40,19 @@ class HomePage(QWidget):
         subtitle.setStyleSheet("color: #888; font-size: 14px;")
         layout.addWidget(subtitle)
 
-        # 版本号
+        # 版本号 + 统计
         from app.constants import APP_VERSION
+        stats_row = QHBoxLayout()
+        stats_row.setSpacing(12)
+
         lbl_version = BodyLabel(f"v{APP_VERSION}")
         lbl_version.setStyleSheet("color: #555; font-size: 12px;")
-        layout.addWidget(lbl_version)
+        stats_row.addWidget(lbl_version)
+        stats_row.addStretch()
+
+        # 使用统计
+        self._load_stats(stats_row)
+        layout.addLayout(stats_row)
 
         # 拖拽区域
         self.drop_area = PDFDropArea()
@@ -180,6 +188,47 @@ class HomePage(QWidget):
         if len(self._recent_cards) > 3:
             old = self._recent_cards.pop(0)
             old.deleteLater()
+
+    def _load_stats(self, layout):
+        """加载使用统计"""
+        try:
+            from database.db import Database
+            db = Database()
+            # 书库数量
+            row = db.fetch_one("SELECT COUNT(*) FROM books")
+            book_count = row[0] if row else 0
+            # 转换总次数（用 books 表的 created_time 估算）
+            row2 = db.fetch_one("SELECT COUNT(*) FROM books")
+            total_converts = row2[0] if row2 else 0
+            db.close()
+        except Exception:
+            book_count = 0
+            total_converts = 0
+
+        stats = [
+            ("📚", f"{book_count}", "书库"),
+            ("🔄", f"{total_converts}", "总转换"),
+        ]
+        for emoji, value, label in stats:
+            stat_widget = QWidget()
+            stat_widget.setFixedHeight(32)
+            stat_layout = QHBoxLayout(stat_widget)
+            stat_layout.setContentsMargins(8, 0, 8, 0)
+            stat_layout.setSpacing(4)
+
+            lbl_emoji = QLabel(emoji)
+            lbl_emoji.setStyleSheet("font-size: 14px;")
+            stat_layout.addWidget(lbl_emoji)
+
+            lbl_val = QLabel(value)
+            lbl_val.setStyleSheet("font-size: 14px; font-weight: bold; color: #60cdff;")
+            stat_layout.addWidget(lbl_val)
+
+            lbl_label = QLabel(label)
+            lbl_label.setStyleSheet("font-size: 11px; color: #888;")
+            stat_layout.addWidget(lbl_label)
+
+            layout.addWidget(stat_widget)
 
     def _navigate_to(self, page: str):
         """触发导航信号"""

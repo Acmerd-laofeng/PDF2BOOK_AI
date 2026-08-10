@@ -137,6 +137,9 @@ class MainWindow(FluentWindow):
         self.task_page.cancel_task.connect(self._on_cancel_task)
         self.task_page.navigate_requested.connect(self.navigate_to)
 
+        # 书库页信号
+        self.library_page.navigate_requested.connect(self.navigate_to)
+
         # 设置页信号
         self.setting_page.settings_changed.connect(self._on_settings_changed)
 
@@ -196,6 +199,9 @@ class MainWindow(FluentWindow):
                     self.task_page.set_task_output(task_id, output_path)
                 break
 
+        # 更新徽章
+        self._update_task_badge()
+
     def _on_error(self, filename: str, error_msg: str):
         """转换错误"""
         InfoBar.error(
@@ -216,7 +222,16 @@ class MainWindow(FluentWindow):
 
     def _on_task_added(self, task_id: int):
         """新任务添加"""
-        pass
+        self._update_task_badge()
+
+    def _update_task_badge(self):
+        """更新窗口标题中的任务计数"""
+        count = self.task_page.get_task_count()
+        base_title = f"{APP_NAME} v{APP_VERSION}"
+        if count > 0:
+            self.setWindowTitle(f"{base_title}  ({count} 个任务)")
+        else:
+            self.setWindowTitle(base_title)
 
     def _on_report_ready(self, report: dict):
         """转换报告就绪 → 缓存报告数据"""

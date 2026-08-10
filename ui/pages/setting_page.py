@@ -349,14 +349,29 @@ class SettingPage(QWidget):
 
         # === 保存按钮 ===
         btn_row = QHBoxLayout()
+        btn_row.setSpacing(8)
         btn_row.addStretch()
 
         self.btn_reset = PushButton("恢复默认")
         self.btn_reset.setFixedHeight(40)
-        self.btn_reset.setFixedWidth(120)
+        self.btn_reset.setFixedWidth(100)
         self.btn_reset.setIcon(FIF.BROOM)
         self.btn_reset.clicked.connect(self._on_reset_defaults)
         btn_row.addWidget(self.btn_reset)
+
+        self.btn_export = PushButton("导出配置")
+        self.btn_export.setFixedHeight(40)
+        self.btn_export.setFixedWidth(100)
+        self.btn_export.setIcon(FIF.SHARE)
+        self.btn_export.clicked.connect(self._on_export_config)
+        btn_row.addWidget(self.btn_export)
+
+        self.btn_import = PushButton("导入配置")
+        self.btn_import.setFixedHeight(40)
+        self.btn_import.setFixedWidth(100)
+        self.btn_import.setIcon(FIF.DOWNLOAD)
+        self.btn_import.clicked.connect(self._on_import_config)
+        btn_row.addWidget(self.btn_import)
 
         self.btn_save = PushButton("保存设置")
         self.btn_save.setFixedHeight(40)
@@ -620,3 +635,94 @@ class SettingPage(QWidget):
         self.ocr_correction.setChecked(False)
 
         InfoBar.success("已恢复默认", "请点击保存设置以生效", parent=self, duration=4000)
+
+    def _on_export_config(self):
+        """导出配置到 JSON 文件"""
+        from PySide6.QtWidgets import QFileDialog
+        from qfluentwidgets import InfoBar
+        import json
+
+        path, _ = QFileDialog.getSaveFileName(
+            self, "导出配置", "pdf2book_config.json",
+            "JSON 文件 (*.json)"
+        )
+        if not path:
+            return
+
+        try:
+            from app.config import Config
+            from app.constants import GEMINI_MODELS
+            quality_keys = ["quick", "standard", "precise", "ai"]
+            config_data = {
+                "quality": quality_keys[self.quality.currentIndex()],
+                "dpi": self.dpi.value(),
+                "parallel": self.parallel.value(),
+                "indent_threshold": self.indent_threshold.value(),
+                "gap_ratio": self.gap_ratio.text(),
+                "detect_chapters": self.detect_chapters.isChecked(),
+                "merge_cross_page": self.merge_cross_page.isChecked(),
+                "epub_theme": self._theme_keys[self.default_theme.currentIndex()],
+                "export_format": self.default_format.currentText(),
+                "output_dir": self.output_dir.text().strip(),
+                "ai_provider": "none" if self.api_provider.currentIndex() == 0 else "gemini",
+                "ai_model": list(GEMINI_MODELS.keys())[self.ai_model.currentIndex()],
+                "ai_api_key": self.api_key.text().strip(),
+                "ocr_correction": self.ocr_correction.isChecked(),
+            }
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(config_data, f, indent=2, ensure_ascii=False)
+            InfoBar.success("导出成功", f"配置已保存到 {path}", parent=self, duration=4000)
+        except Exception as e:
+            InfoBar.error("导出失败", str(e), parent=self, duration=5000)
+
+    def _on_import_config(self):
+        """从 JSON 文件导入配置"""
+        from PySide6.QtWidgets import QFileDialog, QMessageBox
+        from qfluentwidgets import InfoBar
+        import json
+
+        path, _ = QFileDialog.getOpenFileName(
+            self, "导入配置", "", "JSON 文件 (*.json)"
+        )
+        if not path:
+            return
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            quality_map = {"quick": 0, "standard": 1, "precise": 2, "ai": 3}
+            if data.get("quality") in quality_map:
+                self.quality.setCurrentIndex(quality_map[data["quality"]])
+            if "dpi" in data:
+                self.dpi.setValue(data["dpi"])
+            if "parallel" in data:
+                self.parallel.setValue(data["parallel"])
+            if "indent_threshold" in data:
+                self.indent_threshold.setValue(data["indent_threshold"])
+            if "gap_ratio" in data:
+                self.gap_ratio.setText(str(data["gap_ratio"]))
+            if "detect_chapters" in data:
+                self.detect_chapters.setChecked(data["detect_chapters"])
+            if "merge_cross_page" in data:
+                self.merge_cross_page.setChecked(data["merge_cross_page"])
+            if "epub_theme" in data and data["epub_theme"] in self._theme_keys:
+                self.default_theme.setCurrentIndex(self._theme_keys.index(data["epub_theme"]))
+            if "export_format" in data:
+                idx = self.default_format.findText(data["export_format"])
+                if idx >= 0:
+                    self.default_format.setCurrentIndex(idx)
+            if "output_dir" in data:
+                self.output_dir.setText(data["output_dir"])
+            if data.get("ai_provider") == "gemini":
+                self.api_provider.setCurrentIndex(1)
+            else:
+                self.api_provider.setCurrentIndex(0)
+            if "ai_api_key" in data:
+                self.api_key.setText(data["ai_api_key"])
+            if "ocr_correction" in data:
+                self.ocr_correction.setChecked(data["ocr_correction"])
+
+            InfoBar.success("导入成功", "请点击保存设置以生效", parent=self, duration=4000)
+        except Exception as e:
+            InfoBar.error("导入失败", str(e), parent=self, duration=5000)

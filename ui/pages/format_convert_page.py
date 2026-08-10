@@ -432,6 +432,13 @@ class FormatConvertPage(QWidget):
                 duration=5000,
             )
 
+            # 完成提示音
+            try:
+                from PySide6.QtCore import QSound
+                QSound.beep()
+            except Exception:
+                pass
+
     def _on_error(self, filename: str, error_msg: str):
         # 只响应当前格式转换任务
         if self._current_task_id and self._current_file:
